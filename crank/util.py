@@ -36,8 +36,8 @@ class odict(dict):
     def getitem(self, n):
         return self[self._ordering[n]]
 
-    def __slice__(self, a, b, n):
-        return self.values()[a:b:n]
+#    def __slice__(self, a, b, n):
+#        return self.values()[a:b:n]
 
     def iteritems(self):
         for item in self._ordering:
@@ -51,11 +51,12 @@ class odict(dict):
             yield self[item]
 
     def values(self):
-        return [i for i in self.values()]
+        return [i for i in self.itervalues()]
 
-    def __delete__(self, key):
-        self._ordering.remove(key)
-        dict.__delete__(self, key)
+#xxx: fixme
+#    def __del__(self, key, x):
+#        self._ordering.remove(key)
+#        dict.__delete__(self, key)
 
     def pop(self):
         item = self._ordering[-1]
@@ -65,13 +66,38 @@ class odict(dict):
     def __str__(self):
         return str(self.items())
 
+from inspect import getargspec
+
+_cached_argspecs = {}
+def get_argspec(func):
+    try:
+        im_func = func.im_func
+    except AttributeError:
+        im_func = func
+    try:
+        argspec = _cached_argspecs[im_func]
+    except KeyError:
+        argspec = _cached_argspecs[im_func] = getargspec(func)
+    return argspec
+
+def get_params_with_argspec(func, params, remainder):
+    params = params.copy()
+    argspec = get_argspec(func)
+    argvars = argspec[0][1:]
+    if argvars and enumerate(remainder):
+        for i, var in enumerate(argvars):
+            if i >= len(remainder):
+                break
+            params[var] = remainder[i]
+    return params
+
 def remove_argspec_params_from_params(func, params, remainder):
     """Remove parameters from the argument list that are
        not named parameters
        Returns: params, remainder"""
 
     # figure out which of the vars in the argspec are required
-    argspec = _get_argspec(func)
+    argspec = get_argspec(func)
     argvars = argspec[0][1:]
 
     # if there are no required variables, or the remainder is none, we
@@ -113,26 +139,8 @@ def remove_argspec_params_from_params(func, params, remainder):
 
     return params, tuple(remainder)
 
-_cached_argspecs = {}
-def get_argspec(self, func):
-    try:
-        argspec = _cached_argspecs[func.im_func]
-    except KeyError:
-        argspec = _cached_argspecs[func.im_func] = getargspec(func)
-    return argspec
 
-def get_params_with_argspec(func, params, remainder):
-    params = params.copy()
-    argspec = get_argspec(func)
-    argvars = argspec[0][1:]
-    if argvars and enumerate(remainder):
-        for i, var in enumerate(argvars):
-            if i >= len(remainder):
-                break
-            params[var] = remainder[i]
-    return params
-
-def method_matches_args(self, method, state, remainder):
+def method_matches_args(method, state, remainder):
     """
     This method matches the params from the request along with the remainder to the
     method's function signiture.  If the two jive, it returns true.
