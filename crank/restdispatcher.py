@@ -5,6 +5,7 @@ Rest controller provides a RESTful dispatch mechanism, and
 combines controller decoration for TG-Controller behavior.
 """
 from webob.exc import HTTPMethodNotAllowed
+from dispatcher import get_argspec
 from objectdispatcher import ObjectDispatcher
 
 class RestDispatcher(ObjectDispatcher):
@@ -70,7 +71,7 @@ class RestDispatcher(ObjectDispatcher):
                 break
         if method is None:
             return
-        args = self._get_argspec(getattr(current_controller, method))
+        args = get_argspec(getattr(current_controller, method))
         fixed_args = args[0][1:]
         fixed_arg_length = len(fixed_args)
         var_args = args[1]

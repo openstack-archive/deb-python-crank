@@ -16,7 +16,8 @@ class which provides the ordinary TurboGears mechanism.
 
 """
 
-from dispatcher import get_argspec, method_matches_args, Dispatcher
+from util import get_argspec, method_matches_args
+from dispatcher import Dispatcher
 from webob.exc import HTTPNotFound
 
 class ObjectDispatcher(Dispatcher):

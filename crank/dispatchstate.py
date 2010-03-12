@@ -14,7 +14,7 @@ class DispatchState(object):
         self.request = request
         self.url_path = request.path_info
 
-        if params:
+        if params is not None:
             self.params = params
         else:
             self.params = request.params
@@ -24,7 +24,6 @@ class DispatchState(object):
         self.method = None
         self.remainder = None
         self.dispatcher = None
-        self.params = params
 
     def add_controller(self, location, controller):
         """Add a controller object to the stack"""
