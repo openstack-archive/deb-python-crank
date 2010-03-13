@@ -197,8 +197,6 @@ class Path(collections.deque):
         
         if isinstance(value, (str, unicode)):
             self.extend(value.strip(separator).split(separator))
-            if '' in self:
-                self.remove('')
             return
         
         self.extend(value)

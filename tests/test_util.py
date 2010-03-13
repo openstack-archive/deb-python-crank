@@ -180,7 +180,7 @@ def test_path_list():
         path = Path()
     
     cases = [
-            ('/', []),
+            ('/', ['']),
             ('/foo', ['foo']),
             ('/foo/bar', ['foo', 'bar']),
             ('/foo/bar/', ['foo', 'bar']),
