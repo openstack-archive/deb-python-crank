@@ -185,12 +185,13 @@ def method_matches_args(method, params, remainder, lax_params=False):
 
 
 class Path(collections.deque):
-    def __init__(self, value='/', separator='/'):
+    def __init__(self, value=None, separator='/'):
         self.separator = separator
         
         super(Path, self).__init__()
         
-        self._assign(value)
+        if value is not None:
+            self._assign(value)
     
     def _assign(self, value):
         separator = self.separator

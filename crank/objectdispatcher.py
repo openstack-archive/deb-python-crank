@@ -105,31 +105,35 @@ class ObjectDispatcher(Dispatcher):
         tree until we found a method which matches with a default or lookup method.
         """
 
-        orig_url_path = state.url_path
-        if len(remainder):
-            state.url_path = state.url_path[:-len(remainder)]
+        print state.path
+        orig_path = state.path
+        
         for i in xrange(len(state.controller_path)):
             controller = state.controller
             if self._is_exposed(controller, '_default'):
                 state.add_method(controller._default, remainder)
                 state.dispatcher = self
                 return state
+            
             if self._is_exposed(controller, '_lookup'):
                 controller, remainder = controller._lookup(*remainder)
                 last_tried_abstraction = getattr(self, '_last_tried_abstraction', None)
                 if type(last_tried_abstraction) != type(controller):
                     self._last_tried_abstraction = controller
                     return self._dispatch_controller('_lookup', controller, state, remainder)
+            
             if self._is_exposed(controller, 'index') and\
                method_matches_args(controller.index, state.params, remainder, self._use_lax_params):
                 state.add_method(controller.index, remainder)
                 state.dispatcher = self
                 return state
+            
             state.controller_path.pop()
-            if len(state.url_path):
+            if len(state.path):
                 remainder = list(remainder)
-                remainder.insert(0, state.url_path[-1])
-                state.url_path.pop()
+                remainder.insert(0, state.path[-1])
+                state.path.pop()
+        
         raise HTTPNotFound
 
     def _dispatch(self, state, remainder=None):
@@ -141,7 +145,7 @@ class ObjectDispatcher(Dispatcher):
             state.dispatcher = self
             state.add_controller('/', self)
         if remainder is None:
-            remainder = state.url_path
+            remainder = state.path
         current_controller = state.controller
 
         if hasattr(current_controller, '_check_security'):
@@ -175,7 +179,7 @@ class ObjectDispatcher(Dispatcher):
         #dispatch not found
         return self._dispatch_first_found_default_or_lookup(state, remainder)
 
-    def _setup_wsgiorg_routing_args(self, url_path, remainder, params):
+    def _setup_wsgiorg_routing_args(self, path, remainder, params):
         """
         This is expected to be overridden by any subclass that wants to set
         the routing_args (RestController). Do not delete.

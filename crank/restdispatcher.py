@@ -19,7 +19,7 @@ class RestDispatcher(ObjectDispatcher):
             if self._is_exposed(controller, method):
                 return getattr(controller, method)
 
-    def _setup_wsgiorg_routing_args(self, url_path, remainder, params):
+    def _setup_wsgiorg_routing_args(self, path, remainder, params):
         pass
         #request.environ['wsgiorg.routing_args'] = (tuple(remainder), params)
 
@@ -62,8 +62,8 @@ class RestDispatcher(ObjectDispatcher):
             if sub_controller:
                 remainder = remainder[1:]
                 state.current_controller = sub_controller
-                state.url_path = '/'.join(remainder)
-                r = self._dispatch_controller(state.url_path, sub_controller, state, remainder)
+                state.path = '/'.join(remainder)
+                r = self._dispatch_controller(state.path, sub_controller, state, remainder)
                 if r:
                     return r
         return self._dispatch_first_found_default_or_lookup(state, remainder)
@@ -144,8 +144,8 @@ class RestDispatcher(ObjectDispatcher):
             if sub_controller:
                 remainder = remainder[1:]
                 state.current_controller = sub_controller
-                state.url_path = '/'.join(remainder)
-                r = self._dispatch_controller(state.url_path, sub_controller, state, remainder)
+                state.path = '/'.join(remainder)
+                r = self._dispatch_controller(state.path, sub_controller, state, remainder)
                 if r:
                     return r
         return self._dispatch_first_found_default_or_lookup(state, remainder)

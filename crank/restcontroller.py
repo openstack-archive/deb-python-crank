@@ -11,8 +11,8 @@ class RestController(RestDispatcher):
         verb = kw.get('_method', None)
 
         request = web.core.request
-        url_path = '/'.join(args)
-        state = DispatchState(url_path, kw)
+        path = '/'.join(args)
+        state = DispatchState(path, kw)
         state.request = request
         state.add_controller('/', self)
         state.dispatcher = self

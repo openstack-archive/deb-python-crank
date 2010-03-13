@@ -24,13 +24,13 @@ class Dispatcher(object):
         """
         raise NotImplementedError
 
-    def _setup_wsgiorg_routing_args(self, url_path, remainder, params):
+    def _setup_wsgiorg_routing_args(self, path, remainder, params):
         """
         This is expected to be overridden by any subclass that wants to set
         the routing_args.
         """
 
-    def _setup_wsgi_script_name(self, url_path, remainder, params):
+    def _setup_wsgi_script_name(self, path, remainder, params):
         """
         This is expected to be overridden by any subclass that wants to set
         the script name.
