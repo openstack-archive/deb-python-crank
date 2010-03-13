@@ -11,13 +11,14 @@ class TestDispatchState:
 
     def setup(self):
         self.request = MockRequest()
-        self.state = DispatchState(self.request, {'a':1, 'b':2})
+        self.dispatcher = MockController()
+        self.state = DispatchState(self.request, self.dispatcher, {'a':1, 'b':2})
 
     def test_create(self):
         assert self.state.params == {'a':1, 'b':2}, self.state.params
 
     def test_create_params_in_request(self):
-        state = DispatchState(self.request)
+        state = DispatchState(self.request, self.dispatcher)
         assert state.params == {'c':3, 'd':4}, state.params
 
     def test_add_controller(self):

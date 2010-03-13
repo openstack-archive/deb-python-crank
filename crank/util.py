@@ -1,19 +1,8 @@
 """
-This is the main dispatcher module.
+Utilities used by crank.
 
-Dispatch works as follows:
-Start at the RootController, the root controller must
-have a _dispatch function, which defines how we move
-from object to object in the system.
-Continue following the dispatch mechanism for a given
-controller until you reach another controller with a
-_dispatch method defined.  Use the new _dispatch
-method until anther controller with _dispatch defined
-or until the url has been traversed to entirety.
-
-This module also contains the standard ObjectDispatch
-class which provides the ordinary TurboGears mechanism.
-
+Copyright (c) Chrispther Perkins
+MIT License
 """
 
 class odict(dict):

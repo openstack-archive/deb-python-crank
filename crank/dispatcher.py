@@ -16,9 +16,6 @@ class which provides the ordinary TurboGears mechanism.
 
 """
 
-from urllib import url2pathname
-from inspect import ismethod, isclass, getargspec
-
 class Dispatcher(object):
     """
        Extend this class to define your own mechanism for dispatch.
@@ -37,5 +34,8 @@ class Dispatcher(object):
         """
 
     def _setup_wsgi_script_name(self, url_path, remainder, params):
-        pass
+        """
+        This is expected to be overridden by any subclass that wants to set
+        the script name.
+        """
 
