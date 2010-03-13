@@ -4,8 +4,9 @@ This module contains the RestDispatcher implementation
 Rest controller provides a RESTful dispatch mechanism, and
 combines controller decoration for TG-Controller behavior.
 """
+from inspect import ismethod
 from webob.exc import HTTPMethodNotAllowed
-from dispatcher import get_argspec
+from util import get_argspec, method_matches_args
 from objectdispatcher import ObjectDispatcher
 
 class RestDispatcher(ObjectDispatcher):
@@ -19,7 +20,7 @@ class RestDispatcher(ObjectDispatcher):
             if self._is_exposed(controller, method):
                 return getattr(controller, method)
 
-    def _setup_wsgiorg_routing_args(self, path, remainder, params):
+    def _setup_wsgiorg_routing_args(self, url_path, remainder, params):
         pass
         #request.environ['wsgiorg.routing_args'] = (tuple(remainder), params)
 
@@ -37,7 +38,7 @@ class RestDispatcher(ObjectDispatcher):
 
         method_name = method
         method = self._find_first_exposed(current_controller, [method,])
-        if method and self._method_matches_args(method, state, remainder):
+        if method and method_matches_args(method, state.params, remainder):
             state.add_method(method, remainder)
             return state
 
@@ -48,7 +49,7 @@ class RestDispatcher(ObjectDispatcher):
         method_name = method
         method = self._find_first_exposed(current_controller, ('post_delete', 'delete'))
 
-        if method and self._method_matches_args(method, state, remainder):
+        if method and method_matches_args(method, state.params, remainder):
             state.add_method(method, remainder)
             return state
 
@@ -106,7 +107,7 @@ class RestDispatcher(ObjectDispatcher):
         if self._is_exposed(current_controller, method_name):
             method = getattr(current_controller, method_name)
             new_remainder = remainder[:-1]
-            if method and self._method_matches_args(method, state, new_remainder):
+            if method and method_matches_args(method, state.params, new_remainder):
                 state.add_method(method, new_remainder)
                 return state
 
@@ -121,7 +122,7 @@ class RestDispatcher(ObjectDispatcher):
            self._is_exposed(current_controller, 'get_%s' % method_name)):
             method = self._find_first_exposed(current_controller, ('get_%s' % method_name, method_name))
             new_remainder = remainder[:-1]
-            if method and self._method_matches_args(method, state, new_remainder):
+            if method and method_matches_args(method, state.params, new_remainder):
                 state.add_method(method, new_remainder)
                 return state
 
@@ -130,7 +131,7 @@ class RestDispatcher(ObjectDispatcher):
         method_name = method
         method = self._find_first_exposed(current_controller, ('post_%s' % method_name, method_name))
 
-        if method and self._method_matches_args(method, state, remainder):
+        if method and method_matches_args(method, state.params, remainder):
             state.add_method(method, remainder)
             return state
 
@@ -159,7 +160,7 @@ class RestDispatcher(ObjectDispatcher):
                 return state
             if self._is_exposed(current_controller, 'get_one'):
                 method = current_controller.get_one
-                if method and self._method_matches_args(method, state, remainder):
+                if method and method_matches_args(method, state.params, remainder):
                     state.add_method(method, remainder)
                     return state
             return self._dispatch_first_found_default_or_lookup(state, remainder)
@@ -190,7 +191,7 @@ class RestDispatcher(ObjectDispatcher):
             else:
                 method = current_controller.get
 
-            if method and self._method_matches_args(method, state, remainder):
+            if method and method_matches_args(method, state.params, remainder):
                 state.add_method(method, remainder)
                 return state
 
@@ -203,11 +204,32 @@ class RestDispatcher(ObjectDispatcher):
         'get':_handle_get,
         }
 
-    def _dispatch(self, state, remainder):
-        """returns: populated DispachState object
+    def _is_controller(self, controller, name):
         """
+        Override this function to define how an object is determined to be a
+        controller.
+        """
+        method = getattr(controller, name, None)
+        if method is not None:
+            return not ismethod(method)
 
-        log.debug('Entering dispatch for remainder: %s in controller %s'%(remainder, self))
+    def _dispatch(self, state, remainder=None):
+        """
+        This method defines how the object dispatch mechanism works, including
+        checking for security along the way.
+        """
+        if state.dispatcher is None:
+            state.dispatcher = self
+            state.add_controller('/', self)
+        if remainder is None:
+            remainder = state.path
+        current_controller = state.controller
+
+        #remove blanks from the front of the remainder
+        while remainder and not remainder[0]:
+            remainder = remainder[1:]
+
+        #log.debug('Entering dispatch for remainder: %s in controller %s'%(remainder, self))
         if not hasattr(state, 'http_method'):
             method = state.request.method.lower()
             params = state.params
