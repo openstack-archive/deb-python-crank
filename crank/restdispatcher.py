@@ -13,6 +13,12 @@ class RestDispatcher(ObjectDispatcher):
     Please see RestController for a rundown of the controller
     methods used.
     """
+
+    def _find_first_exposed(self, controller, methods):
+        for method in methods:
+            if self._is_exposed(controller, method):
+                return getattr(controller, method)
+
     def _setup_wsgiorg_routing_args(self, url_path, remainder, params):
         pass
         #request.environ['wsgiorg.routing_args'] = (tuple(remainder), params)

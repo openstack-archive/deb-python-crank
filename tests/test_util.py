@@ -133,6 +133,12 @@ def test_method_matches_args_no_remainder():
     r = method_matches_args(mock_f, params, remainder)
     assert r
 
+def test_method_matches_args_no_lax_params():
+    params = {'a':1, 'b':2, 'c':3, 'x':4}
+    remainder = []
+    r = method_matches_args(mock_f2, params, remainder, False)
+    assert not(r)
+
 def test_method_matches_args_fails_no_remainder():
     params = {'a':1, 'x':3}
     remainder = []

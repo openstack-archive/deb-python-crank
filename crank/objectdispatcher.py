@@ -19,6 +19,7 @@ class which provides the ordinary TurboGears mechanism.
 from util import get_argspec, method_matches_args
 from dispatcher import Dispatcher
 from webob.exc import HTTPNotFound
+from inspect import ismethod
 
 class ObjectDispatcher(Dispatcher):
     """
@@ -58,10 +59,9 @@ class ObjectDispatcher(Dispatcher):
     5) If we fail our search, try the most recent recorded methods as per 2 and
        3.
     """
-    def _find_first_exposed(self, controller, methods):
-        for method in methods:
-            if self._is_exposed(controller, method):
-                return getattr(controller, method)
+
+    #Change to True to allow extra params to pass thru the dispatch
+    _use_lax_params = False
 
     def _is_exposed(self, controller, name):
         """Override this function to define how a controller method is
@@ -74,8 +74,7 @@ class ObjectDispatcher(Dispatcher):
         :Returns:
            True or None
         """
-        if hasattr(controller, name) and ismethod(getattr(controller, name)):
-            return True
+        return ismethod(getattr(controller, name, False))
 
     def _is_controller(self, controller, name):
         """
@@ -129,6 +128,11 @@ class ObjectDispatcher(Dispatcher):
                 state.url_path = '/'.join(remainder)
                 return self._dispatch_controller(
                     '_lookup', controller, state, remainder)
+            if self._is_exposed(controller, 'index') and\
+               method_matches_args(controller.index, state.params, remainder, self._use_lax_params):
+                state.add_method(controller.index, remainder)
+                state.dispatcher = self
+                return state
             state.controller_path.pop()
             if len(state.url_path):
                 remainder = list(remainder)
@@ -136,18 +140,22 @@ class ObjectDispatcher(Dispatcher):
                 state.url_path.pop()
         raise HTTPNotFound
 
-    def _dispatch(self, state, remainder):
+    def _dispatch(self, state, remainder=None):
         """
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
+
+        if remainder is None:
+            remainder = state.url_path
         current_controller = state.controller
 
         if hasattr(current_controller, '_check_security'):
             current_controller._check_security()
         #we are plumb out of path, check for index
         if not remainder:
-            if hasattr(current_controller, 'index'):
+            if self._is_exposed(current_controller, 'index') and \
+               method_matches_args(current_controller.index, state.params, remainder, self._use_lax_params):
                 state.add_method(current_controller.index, remainder)
                 return state
             #if there is no index, head up the tree
@@ -160,7 +168,7 @@ class ObjectDispatcher(Dispatcher):
         if self._is_exposed(current_controller, current_path):
             #check to see if the argspec jives
             controller = getattr(current_controller, current_path)
-            if self._method_matches_args(controller, state, remainder[1:]):
+            if method_matches_args(controller, state.params, remainder[1:], self._use_lax_params):
                 state.add_method(controller, remainder[1:])
                 return state
 

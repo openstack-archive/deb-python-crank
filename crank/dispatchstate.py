@@ -12,7 +12,7 @@ class DispatchState(object):
     """
     def __init__(self, request, dispatcher, params=None):
         self.request = request
-        self.url_path = request.path_info
+        self.url_path = request.path_info.split('/')[1:]
 
         if params is not None:
             self.params = params

@@ -128,7 +128,7 @@ def remove_argspec_params_from_params(func, params, remainder):
     return params, tuple(remainder)
 
 
-def method_matches_args(method, params, remainder):
+def method_matches_args(method, params, remainder, lax_params=False):
     """
     This method matches the params from the request along with the remainder to the
     method's function signiture.  If the two jive, it returns true.
@@ -160,10 +160,9 @@ def method_matches_args(method, params, remainder):
         else:
             break;
 
-    var_in_params = 0
-    for var in argvars:
-        if var in params:
-            var_in_params+=1
+    #make sure no params exist if keyword argumnts are missing
+    if not lax_params and argspec[2] is None and params:
+        return False
 
     #make sure all of the non-optional-vars are there
     if not required_vars:
@@ -171,4 +170,6 @@ def method_matches_args(method, params, remainder):
         if len(argvars)<len(remainder) and not argspec[1]:
             return False
         return True
+
+
     return False
