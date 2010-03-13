@@ -25,7 +25,7 @@ class DispatchState(object):
         self.remainder = None
         self.dispatcher = dispatcher
         self.add_controller('/', dispatcher)
-
+    
     def add_controller(self, location, controller):
         """Add a controller object to the stack"""
         self.controller_path[location] = controller
