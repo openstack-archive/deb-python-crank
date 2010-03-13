@@ -2,7 +2,7 @@
 from nose.tools import raises
 from crank.restdispatcher import RestDispatcher
 from crank.dispatchstate import DispatchState
-from webob.exc import HTTPNotFound
+from webob.exc import HTTPNotFound, HTTPMethodNotAllowed
 
 class MockRequest(object):
 
@@ -90,6 +90,30 @@ class TestDispatcher:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'get_delete'
 
+    @raises(HTTPMethodNotAllowed)
+    def test_delete_hack_bad_get(self):
+        req = MockRequest('/', params={'_method':'delete'}, method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+
+    @raises(HTTPMethodNotAllowed)
+    def test_put_hack_bad_get(self):
+        req = MockRequest('/', params={'_method':'put'}, method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+
+    def test_put(self):
+        req = MockRequest('/', params={'_method':'put'}, method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'put', state.method
+
+    def test_put(self):
+        req = MockRequest('/', method='put')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'put', state.method
+
 class TestSimpleDispatcher:
 
     def setup(self):
@@ -109,6 +133,12 @@ class TestSimpleDispatcher:
 
     def test_delete(self):
         req = MockRequest('/', method='delete')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'delete'
+
+    def test_delete_hacky(self):
+        req = MockRequest('/', params={'_method':'delete'}, method='post')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'delete'
