@@ -215,6 +215,9 @@ class Path(collections.deque):
     def __repr__(self):
         return "<Path %r>" % super(Path, self).__repr__()
     
+    def __cmp__(self, other):
+        return cmp(type(other)(self), other)
+    
     def __getitem__(self, i):
         try:
             return super(Path, self).__getitem__(i)

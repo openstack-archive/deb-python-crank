@@ -250,3 +250,8 @@ def test_path_slicing():
     assert str(instance.path[2:]) == 'bar/baz'
     assert str(instance.path[0:2]) == '/foo'
     assert str(instance.path[::2]) == '/bar'
+
+def test_path_comparison():
+    assert Path('/foo') == ('', 'foo')
+    assert Path('/foo') == ['', 'foo']
+    assert Path('/foo') == '/foo'
