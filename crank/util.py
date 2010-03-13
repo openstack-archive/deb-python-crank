@@ -36,7 +36,7 @@ class odict(dict):
     def getitem(self, n):
         return self[self._ordering[n]]
 
-#    def __slice__(self, a, b, n):
+#    def __slice__(self, a, b=-1, n=1):
 #        return self.values()[a:b:n]
 
     def iteritems(self):
@@ -53,15 +53,13 @@ class odict(dict):
     def values(self):
         return [i for i in self.itervalues()]
 
-#xxx: fixme
-#    def __del__(self, key, x):
-#        self._ordering.remove(key)
-#        dict.__delete__(self, key)
+    def __delitem__(self, key):
+        self._ordering.remove(key)
+        dict.__delitem__(self, key)
 
     def pop(self):
         item = self._ordering[-1]
         del self[item]
-        self._ordering.remove(item)
 
     def __str__(self):
         return str(self.items())
@@ -120,19 +118,20 @@ def remove_argspec_params_from_params(func, params, remainder):
     params=params.copy()
 
     # replace the existing required variables with the values that come in
-    # from params these could be the parameters that come off of validation.
+    # from params. these could be the parameters that come off of validation.
     remainder = list(remainder)
     for i, var in enumerate(required_vars):
-        if i < len(remainder):
-            remainder[i] = params[var]
-        elif params.get(var):
-            remainder.append(params[var])
-        if var in params:
+        val = params.get(var, None)
+        if i < len(remainder) and val:
+            remainder[i] = val
+        elif val:
+            remainder.append(val)
+        if val:
             del params[var]
 
-    #remove the optional positional variables (remainder) from the named parameters
+    # remove the optional positional variables (remainder) from the named parameters
     # until we run out of remainder, that is, avoid creating duplicate parameters
-    for i,(original,var) in enumerate(zip(remainder[len(required_vars):],optional_vars)):
+    for i, (original, var) in enumerate(zip(remainder[len(required_vars):],optional_vars)):
         if var in params:
             remainder[ len(required_vars)+i ] = params[var]
             del params[var]
@@ -140,7 +139,7 @@ def remove_argspec_params_from_params(func, params, remainder):
     return params, tuple(remainder)
 
 
-def method_matches_args(method, state, remainder):
+def method_matches_args(method, params, remainder):
     """
     This method matches the params from the request along with the remainder to the
     method's function signiture.  If the two jive, it returns true.
@@ -166,7 +165,6 @@ def method_matches_args(method, state, remainder):
         required_vars = []
 
     #remove vars found in the params list
-    params = state.params
     for var in required_vars[:]:
         if var in params:
             required_vars.pop(0)
@@ -180,14 +178,8 @@ def method_matches_args(method, state, remainder):
 
     #make sure all of the non-optional-vars are there
     if not required_vars:
-        var_args = argspec[0][1:]
         #there are more args in the remainder than are available in the argspec
-        if len(var_args)<len(remainder) and not argspec[1]:
+        if len(argvars)<len(remainder) and not argspec[1]:
             return False
-        defaults = argspec[3] or []
-        var_args = var_args[len(remainder):-len(defaults)]
-        for arg in var_args:
-            if arg not in state.params:
-                return False
         return True
     return False

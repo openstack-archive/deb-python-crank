@@ -37,6 +37,13 @@ class TestDispatchState:
         var_args = ['g', 'h']
         self.state.add_routing_args(current_path, remainder, fixed, var_args)
 
+    def test_add_routing_args_with_remainder(self):
+        current_path = 'current'
+        remainder = ['c', 'd', 'x','y']
+        fixed = ['e', 'f', 'g']
+        var_args = ['g', 'h']
+        self.state.add_routing_args(current_path, remainder, fixed, var_args)
+
     def test_controller(self):
         mock = MockController()
         self.state.add_controller('mock', mock)
