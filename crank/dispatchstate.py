@@ -10,7 +10,7 @@ class DispatchState(object):
     us to attach things like routing args and to keep track of the
     path the controller takes along the system.
     """
-    def __init__(self, request, dispatcher, params=None):
+    def __init__(self, request, dispatcher=None, params=None):
         self.request = request
         self.url_path = request.path_info.split('/')[1:]
 

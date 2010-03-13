@@ -12,7 +12,39 @@ class MockRequest(object):
         if params is None:
             self.params = {}
 
+class MockSubDispatcher(ObjectDispatcher):
+    def index(self):
+        pass
+
+class MockLookupHelperWithArgs:
+
+    def get_here(self, *args):
+        pass
+
+    def post_with_mixed_args(self, arg1, arg2, **kw):
+        pass
+
+class MockLoookupDispatcherWithArgs(ObjectDispatcher):
+
+    def _lookup(self, *args):
+        return MockLookupHelperWithArgs(), args
+
+mock_lookup_dispatcher_with_args = MockLoookupDispatcherWithArgs()
+
+class MockDispatchDispatcher(ObjectDispatcher):
+
+    def wacky(self, *args, **kw):
+        pass
+
+    def _check_security(self):
+        pass
+
+    def _dispatch(self, state, remainder=None):
+        state.add_method(self.wacky, remainder)
+        return state
+
 class MockDispatcher(ObjectDispatcher):
+
 
     def index(self):
         pass
@@ -25,6 +57,9 @@ class MockDispatcher(ObjectDispatcher):
 
     def with_args(self, a, b):
         pass
+
+    sub = MockSubDispatcher()
+    override_dispatch = MockDispatchDispatcher()
 
 class MockError(Exception):pass
 class MockDispatcherWithSecurity(ObjectDispatcher):
@@ -73,7 +108,7 @@ class TestDispatcher:
 
     def test_dispatch_index(self):
         req = MockRequest('/')
-        state = DispatchState(req, self.dispatcher)
+        state = DispatchState(req)
         state = self.dispatcher._dispatch(state, [])
         assert state.method.__name__ == 'index', state.method
 
@@ -85,31 +120,31 @@ class TestDispatcher:
 
     def test_dispatch_default_with_unicode(self):
         req = MockRequest('/', params={u'å':u'ß'})
-        state = DispatchState(req, self.dispatcher)
+        state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == '_default', state.method
 
     def test_controller_method_dispatch_no_args(self):
         req = MockRequest('/no_args')
-        state = DispatchState(req, self.dispatcher)
+        state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'no_args', state.method
 
     def test_controller_method_with_unicode_args(self):
         req = MockRequest(u'/with_args/å/ß')
-        state = DispatchState(req, self.dispatcher)
+        state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'with_args', state.method
 
     def test_controller_method_with_args(self):
         req = MockRequest('/with_args/a/b')
-        state = DispatchState(req, self.dispatcher)
+        state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'with_args', state.method
 
     def test_controller_method_with_args_missing_args_default(self):
         req = MockRequest('/with_args/a')
-        state = DispatchState(req, self.dispatcher)
+        state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == '_default', state.method
 
@@ -138,3 +173,41 @@ class TestDispatcher:
         req = MockRequest('/with_args/a')
         state = DispatchState(req, mock_dispatcher_with_check_security)
         state = mock_dispatcher_with_check_security._dispatch(state)
+
+    def test_sub_dispatcher(self):
+        req = MockRequest('/sub')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'index', state.method
+        assert state.controller.__class__.__name__ == 'MockSubDispatcher', state.controller
+
+    def test_sub_dispatcher_bad_remainder_call_parent_default(self):
+        req = MockRequest('/sub/a')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == '_default', state.method
+
+    def test_sub_dispatcher_bad_params_call_parent_default(self):
+        req = MockRequest('/sub', params={'a':1})
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == '_default', state.method
+
+    def test_sub_dispatcher_override_dispatch(self):
+        req = MockRequest('/override_dispatch', params={'a':1})
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'wacky', state.method
+
+    def test_lookup_dispatch(self):
+        req = MockRequest('/get_here')
+        state = DispatchState(req, mock_lookup_dispatcher_with_args)
+        state = mock_lookup_dispatcher_with_args._dispatch(state)
+        assert state.method.__name__ == 'get_here', state.method
+        assert state.controller.__class__.__name__ == 'MockLookupHelperWithArgs', state.controller
+
+    @raises(HTTPNotFound)
+    def test_lookup_dispatch_bad_params(self):
+        req = MockRequest('/get_here', params={'a':1})
+        state = DispatchState(req, mock_lookup_dispatcher_with_args)
+        state = mock_lookup_dispatcher_with_args._dispatch(state)

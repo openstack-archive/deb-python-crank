@@ -76,13 +76,6 @@ class ObjectDispatcher(Dispatcher):
         """
         return ismethod(getattr(controller, name, False))
 
-    def _is_controller(self, controller, name):
-        """
-        Override this function to define how an object is determined to be a
-        controller.
-        """
-        return hasattr(controller, name) and not ismethod(getattr(controller, name))
-
     def _dispatch_controller(self, current_path, controller, state, remainder):
         """
            Essentially, this method defines what to do when we move to the next
@@ -93,15 +86,12 @@ class ObjectDispatcher(Dispatcher):
            Also, this is the place where the controller is checked for
            controller-level security.
         """
-        #xxx: add logging?
         if hasattr(controller, '_dispatch'):
-            if hasattr(controller, "im_self"):
-                obj = controller.im_self
-            else:
-                obj = controller
+            obj = getattr(controller, 'im_self', controller)
 
-            if hasattr(obj, '_check_security'):
-                obj._check_security()
+            security_check = getattr(obj, '_check_security', None)
+            if security_check:
+                security_check()
             state.add_controller(current_path, controller)
             state.dispatcher = controller
             return controller._dispatch(state, remainder)
@@ -114,6 +104,7 @@ class ObjectDispatcher(Dispatcher):
         applicable method, so therefore we head back up the branches of the
         tree until we found a method which matches with a default or lookup method.
         """
+
         orig_url_path = state.url_path
         if len(remainder):
             state.url_path = state.url_path[:-len(remainder)]
@@ -125,9 +116,10 @@ class ObjectDispatcher(Dispatcher):
                 return state
             if self._is_exposed(controller, '_lookup'):
                 controller, remainder = controller._lookup(*remainder)
-                state.url_path = '/'.join(remainder)
-                return self._dispatch_controller(
-                    '_lookup', controller, state, remainder)
+                last_tried_abstraction = getattr(self, '_last_tried_abstraction', None)
+                if type(last_tried_abstraction) != type(controller):
+                    self._last_tried_abstraction = controller
+                    return self._dispatch_controller('_lookup', controller, state, remainder)
             if self._is_exposed(controller, 'index') and\
                method_matches_args(controller.index, state.params, remainder, self._use_lax_params):
                 state.add_method(controller.index, remainder)
@@ -145,7 +137,9 @@ class ObjectDispatcher(Dispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-
+        if state.dispatcher is None:
+            state.dispatcher = self
+            state.add_controller('/', self)
         if remainder is None:
             remainder = state.url_path
         current_controller = state.controller

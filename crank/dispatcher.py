@@ -11,9 +11,6 @@ _dispatch method defined.  Use the new _dispatch
 method until anther controller with _dispatch defined
 or until the url has been traversed to entirety.
 
-This module also contains the standard ObjectDispatch
-class which provides the ordinary TurboGears mechanism.
-
 """
 
 class Dispatcher(object):
@@ -21,7 +18,7 @@ class Dispatcher(object):
        Extend this class to define your own mechanism for dispatch.
     """
 
-    def _dispatch(self, state, remainder):
+    def _dispatch(self, state, remainder=None):
         """override this to define how your controller should dispatch.
         returns: dispatcher, controller_path, remainder
         """
