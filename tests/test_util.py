@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from nose.tools import raises
 from crank.util import *
 
@@ -169,3 +171,69 @@ def test_method_matches_args_fails_more_remainder_than_argspec():
     r = method_matches_args(mock_f2, params, remainder)
     assert not(r)
 
+
+def assert_path(instance, expected, kind=list):
+    assert kind(instance.path) == expected, (kind(instance.path), expected)
+
+def test_path_list():
+    class MockOb(object):
+        path = Path()
+    
+    cases = [
+            ('/', ['', '']),
+            ('/foo', ['', 'foo']),
+            ('/foo/bar', ['', 'foo', 'bar']),
+            ('/foo/bar/', ['', 'foo', 'bar', '']),
+            ('/foo//bar/', ['', 'foo', '', 'bar', '']),
+            (('foo', ), ['foo']),
+            (('foo', 'bar'), ['foo', 'bar'])
+        ]
+    
+    for case, expected in cases:
+        instance = MockOb()
+        instance.path = case
+        
+        yield assert_path, instance, expected
+
+def test_path_str():
+    class MockOb(object):
+        path = Path()
+    
+    cases = [
+            ('/', "/"),
+            ('/foo', '/foo'),
+            ('/foo/bar', '/foo/bar'),
+            ('/foo/bar/', '/foo/bar/'),
+            ('/foo//bar/', '/foo//bar/'),
+            (('foo', ), 'foo'),
+            (('foo', 'bar'), 'foo/bar')
+        ]
+    
+    for case, expected in cases:
+        instance = MockOb()
+        instance.path = case
+        
+        yield assert_path, instance, expected, str
+    
+    instance = MockOb()
+    instance.path = '/foo/bar'
+    yield assert_path, instance, """<Path "deque([\'\', \'foo\', \'bar\'])">""", repr
+
+def test_path_unicode():
+    class MockOb(object):
+        path = Path()
+    
+    cases = [
+            ('/', "/"),
+            (u'/©', u'/©'),
+            (u'/©/™', u'/©/™'),
+            (u'/©/™/', u'/©/™/'),
+            ((u'¡', ), u'¡'),
+            (('foo', u'¡'), u'foo/¡')
+        ]
+    
+    for case, expected in cases:
+        instance = MockOb()
+        instance.path = case
+        
+        yield assert_path, instance, expected, unicode

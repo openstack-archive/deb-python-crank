@@ -5,6 +5,15 @@ Copyright (c) Chrispther Perkins
 MIT License
 """
 
+import collections
+
+__all__ = [
+        'odict',
+        'get_argspec', 'get_params_with_argspec', 'remove_argspec_params_from_params', 'method_matches_args',
+        'Path'
+    ]
+
+
 class odict(dict):
 
     def __init__(self, *args, **kw):
@@ -173,3 +182,33 @@ def method_matches_args(method, params, remainder, lax_params=False):
 
 
     return False
+
+
+class Path(collections.deque):
+    def __init__(self, value='/', separator='/'):
+        self.separator = separator
+        self._assign(value)
+
+        super(Path, self).__init__()
+    
+    def _assign(self, value):
+        separator = self.separator
+        self.clear()
+        
+        if isinstance(value, (str, unicode)):
+            self.extend(value.split(separator))
+            return
+        
+        self.extend(value)
+    
+    def __set__(self, obj, value):
+        self._assign(value)
+
+    def __str__(self):
+        return str(self.separator).join(self)
+    
+    def __unicode__(self):
+        return unicode(self.separator).join(self)
+
+    def __repr__(self):
+        return "<Path %r>" % super(Path, self).__repr__()
