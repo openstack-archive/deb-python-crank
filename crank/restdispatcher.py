@@ -49,7 +49,7 @@ class RestDispatcher(ObjectDispatcher):
         method_name = method
         method = self._find_first_exposed(current_controller, ('post_delete', 'delete'))
 
-        if method and method_matches_args(method, state.params, remainder):
+        if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
             state.add_method(method, remainder)
             return state
 
@@ -244,6 +244,7 @@ class RestDispatcher(ObjectDispatcher):
                 if method == 'get' and request_method == 'delete':
                     raise HTTPMethodNotAllowed
                 method = request_method
+                del state.params['_method']
             state.http_method = method
 
         r = self._check_for_sub_controllers(state, remainder)

@@ -15,6 +15,18 @@ class MockRequest(object):
 
 class MockDispatcher(RestDispatcher):
 
+    def post(self):
+        pass
+
+    def put(self):
+        pass
+
+    def post_delete(self):
+        pass
+
+    def get_delete(self):
+        pass
+
     def get_one(self, mock_id):
         pass
 
@@ -24,6 +36,12 @@ class MockDispatcher(RestDispatcher):
 class MockSimpleDispatcher(RestDispatcher):
 
     def get(self):
+        pass
+
+    def post(self):
+        pass
+
+    def delete(self):
         pass
 
 class TestDispatcher:
@@ -48,6 +66,30 @@ class TestDispatcher:
         assert state.params == {}, state.params
         assert state.remainder == ['asdf'], state.remainder
 
+    def test_post(self):
+        req = MockRequest('/', method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post'
+
+    def test_post_delete(self):
+        req = MockRequest('/', method='delete')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post_delete'
+
+    def test_post_delete_hacky(self):
+        req = MockRequest('/', params={'_method':'delete'}, method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post_delete'
+
+    def test_get_delete(self):
+        req = MockRequest('/delete', method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_delete'
+
 class TestSimpleDispatcher:
 
     def setup(self):
@@ -58,4 +100,16 @@ class TestSimpleDispatcher:
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'get'
+
+    def test_post(self):
+        req = MockRequest('/', method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post'
+
+    def test_delete(self):
+        req = MockRequest('/', method='delete')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'delete'
 
