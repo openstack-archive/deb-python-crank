@@ -33,6 +33,11 @@ class MockDispatcher(RestDispatcher):
     def get_all(self):
         pass
 
+class MockEmbeddedRestDispatcher(RestDispatcher):
+    def get_one(self, mock_id):
+        pass
+    sub = MockDispatcher()
+
 class MockSimpleDispatcher(RestDispatcher):
 
     def get(self):
@@ -143,3 +148,18 @@ class TestSimpleDispatcher:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'delete'
 
+class TestEmbeddedRestDispatcher:
+
+    def setup(self):
+        self.dispatcher = MockEmbeddedRestDispatcher()
+
+    def test_create(self):
+        pass
+
+    def test_delete_hacky(self):
+        req = MockRequest('/asdf/sub', params={'_method':'delete'}, method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post_delete', state.method
+        assert state.controller.__class__.__name__ == 'MockDispatcher', state.controller
+        assert state.params == {}, state.params
