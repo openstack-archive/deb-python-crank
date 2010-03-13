@@ -173,17 +173,18 @@ def test_method_matches_args_fails_more_remainder_than_argspec():
 
 
 def assert_path(instance, expected, kind=list):
-    assert kind(instance.path) == expected, (instance.path, expected)
+    assert kind(instance.path) == expected, (kind(instance.path), expected)
 
 def test_path_list():
     class MockOb(object):
         path = Path()
     
     cases = [
-            ('/', ['']),
-            ('/foo', ['foo']),
-            ('/foo/bar', ['foo', 'bar']),
-            ('/foo/bar/', ['foo', 'bar']),
+            ('/', ['', '']),
+            ('/foo', ['', 'foo']),
+            ('/foo/bar', ['', 'foo', 'bar']),
+            ('/foo/bar/', ['', 'foo', 'bar', '']),
+            ('/foo//bar/', ['', 'foo', '', 'bar', '']),
             (('foo', ), ['foo']),
             (('foo', 'bar'), ['foo', 'bar'])
         ]
@@ -202,9 +203,10 @@ def test_path_str():
             ('/', "/"),
             ('/foo', '/foo'),
             ('/foo/bar', '/foo/bar'),
-            ('/foo/bar/', '/foo/bar'),
-            (('foo', ), '/foo'),
-            (('foo', 'bar'), '/foo/bar')
+            ('/foo/bar/', '/foo/bar/'),
+            ('/foo//bar/', '/foo//bar/'),
+            (('foo', ), 'foo'),
+            (('foo', 'bar'), 'foo/bar')
         ]
     
     for case, expected in cases:
@@ -215,7 +217,7 @@ def test_path_str():
     
     instance = MockOb()
     instance.path = '/foo/bar'
-    yield assert_path, instance, """<Path "deque(['foo', 'bar'])">""", repr
+    yield assert_path, instance, """<Path "deque([\'\', \'foo\', \'bar\'])">""", repr
 
 def test_path_unicode():
     class MockOb(object):
@@ -225,9 +227,9 @@ def test_path_unicode():
             ('/', "/"),
             (u'/©', u'/©'),
             (u'/©/™', u'/©/™'),
-            (u'/©/™/', u'/©/™'),
-            ((u'¡', ), u'/¡'),
-            (('foo', u'¡'), u'/foo/¡')
+            (u'/©/™/', u'/©/™/'),
+            ((u'¡', ), u'¡'),
+            (('foo', u'¡'), u'foo/¡')
         ]
     
     for case, expected in cases:

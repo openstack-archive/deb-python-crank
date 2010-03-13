@@ -196,7 +196,7 @@ class Path(collections.deque):
         self.clear()
         
         if isinstance(value, (str, unicode)):
-            self.extend(value.strip(separator).split(separator))
+            self.extend(value.split(separator))
             return
         
         self.extend(value)
@@ -205,10 +205,10 @@ class Path(collections.deque):
         self._assign(value)
 
     def __str__(self):
-        return str(self.separator) + str(self.separator).join(self)
+        return str(self.separator).join(self)
     
     def __unicode__(self):
-        return unicode(self.separator) + unicode(self.separator).join(self)
+        return unicode(self.separator).join(self)
 
     def __repr__(self):
         return "<Path %r>" % super(Path, self).__repr__()
