@@ -187,9 +187,10 @@ def method_matches_args(method, params, remainder, lax_params=False):
 class Path(collections.deque):
     def __init__(self, value='/', separator='/'):
         self.separator = separator
-        self._assign(value)
-
+        
         super(Path, self).__init__()
+        
+        self._assign(value)
     
     def _assign(self, value):
         separator = self.separator
@@ -212,3 +213,10 @@ class Path(collections.deque):
 
     def __repr__(self):
         return "<Path %r>" % super(Path, self).__repr__()
+    
+    def __getitem__(self, i):
+        try:
+            return super(Path, self).__getitem__(i)
+        
+        except TypeError:
+            return Path([self[i] for i in xrange(*i.indices(len(self)))])

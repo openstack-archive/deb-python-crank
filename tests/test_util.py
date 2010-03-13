@@ -237,3 +237,16 @@ def test_path_unicode():
         instance.path = case
         
         yield assert_path, instance, expected, unicode
+
+def test_path_slicing():
+    class MockOb(object):
+        path = Path()
+    
+    instance = MockOb()
+    
+    instance.path = '/foo/bar/baz'
+    
+    assert str(instance.path[1:]) == 'foo/bar/baz'
+    assert str(instance.path[2:]) == 'bar/baz'
+    assert str(instance.path[0:2]) == '/foo'
+    assert str(instance.path[::2]) == '/bar'
