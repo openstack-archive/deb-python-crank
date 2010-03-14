@@ -20,10 +20,6 @@ class RestDispatcher(ObjectDispatcher):
             if self._is_exposed(controller, method):
                 return getattr(controller, method)
 
-    def _setup_wsgiorg_routing_args(self, url_path, remainder, params):
-        pass
-        #request.environ['wsgiorg.routing_args'] = (tuple(remainder), params)
-
     def _handle_put_or_post(self, method, state, remainder):
         current_controller = state.controller
         if remainder:

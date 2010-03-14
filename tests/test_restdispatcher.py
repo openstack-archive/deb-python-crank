@@ -33,10 +33,23 @@ class MockDispatcher(RestDispatcher):
     def get_all(self):
         pass
 
+    def other(self):
+        pass
+
+class MockDispatcherWithArgs(RestDispatcher):
+
+    def post(self, *args, **kw):
+        pass
+
+    def other(self, *args):
+        pass
+    sub = MockDispatcher()
+
 class MockEmbeddedRestDispatcher(RestDispatcher):
     def get_one(self, mock_id):
         pass
     sub = MockDispatcher()
+
 
 class MockSimpleDispatcher(RestDispatcher):
 
@@ -119,6 +132,12 @@ class TestDispatcher:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'put', state.method
 
+    def test_other_method(self):
+        req = MockRequest('/other')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'other', state.method
+
 class TestSimpleDispatcher:
 
     def setup(self):
@@ -163,3 +182,29 @@ class TestEmbeddedRestDispatcher:
         assert state.method.__name__ == 'post_delete', state.method
         assert state.controller.__class__.__name__ == 'MockDispatcher', state.controller
         assert state.params == {}, state.params
+
+class TestDispatcherWithArgs:
+
+    def setup(self):
+        self.dispatcher = MockDispatcherWithArgs()
+
+    def test_create(self):
+        pass
+
+    def test_post(self):
+        req = MockRequest('/asdf', method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post'
+
+    def test_put(self):
+        req = MockRequest('/sub')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_all', state.method
+
+    def test_other(self):
+        req = MockRequest('/other')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'other'
