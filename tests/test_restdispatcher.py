@@ -308,3 +308,22 @@ class TestCustomMethodDispatcher:
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'get_custom', state.method
+
+class SubCustomMethodDispatcher(MockDispatcher):
+
+    sub = MockCustomMethodDispatcher()
+
+class TestSubCustomMethodDispatcher:
+
+    def setup(self):
+        self.dispatcher = SubCustomMethodDispatcher()
+
+    def test_create(self):
+        pass
+
+    def test_get_url(self):
+        req = MockRequest('/sub', params={'_method':'custom'}, method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_custom', state.method
+
