@@ -15,7 +15,6 @@ class MockRequest(object):
             self.params = {}
         self.method = method
 
-
 class MockDispatcher(RestDispatcher):
 
     def post(self):
@@ -40,6 +39,9 @@ class MockDispatcher(RestDispatcher):
         pass
 
 class MockEmbeddedRestDispatcherWithArgs(RestDispatcher):
+
+    def get_one(self, mock_id):
+        pass
     def post(self, mock_id):
         pass
     def put(self, mock_id):
@@ -253,6 +255,13 @@ class TestDispatcherWithArgs:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'other'
 
+    def test_sub_get_one(self):
+        req = MockRequest('/sub/mid', method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_one'
+
+
 class TestDispatcherWithVarArgs:
 
     def setup(self):
@@ -309,6 +318,13 @@ class TestCustomMethodDispatcher:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'get_custom', state.method
 
+    @raises(HTTPNotFound)
+    def test_get_fail(self):
+        req = MockRequest('/not_found', params={'_method':'custom'}, method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_custom', state.method
+
 class SubCustomMethodDispatcher(MockDispatcher):
 
     sub = MockCustomMethodDispatcher()
@@ -327,3 +343,35 @@ class TestSubCustomMethodDispatcher:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'get_custom', state.method
 
+class SubNoGet(RestDispatcher):
+    pass
+
+class OtherSubCustomMethodDispatcher(MockDispatcher):
+    sub = SubNoGet()
+
+class TestSubNoGetDispatcher:
+
+    def setup(self):
+        self.dispatcher = OtherSubCustomMethodDispatcher()
+
+    def test_create(self):
+        pass
+
+    @raises(HTTPNotFound)
+    def test_get_not_found(self):
+        req = MockRequest('/sub', method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+
+class TestEmptyDispatcher:
+    def setup(self):
+        self.dispatcher = SubNoGet()
+
+    def test_create(self):
+        pass
+
+    @raises(HTTPNotFound)
+    def test_get_not_found(self):
+        req = MockRequest('/sub', method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
