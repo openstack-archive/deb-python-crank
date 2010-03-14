@@ -175,6 +175,9 @@ def test_method_matches_args_fails_more_remainder_than_argspec():
 def assert_path(instance, expected, kind=list):
     assert kind(instance.path) == expected, (kind(instance.path), expected)
 
+def test_path_path():
+    assert Path(Path('/foo')) == ['', 'foo']
+
 def test_path_list():
     class MockOb(object):
         path = Path()
