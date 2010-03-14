@@ -105,35 +105,34 @@ class ObjectDispatcher(Dispatcher):
         tree until we found a method which matches with a default or lookup method.
         """
 
-        print state.path
         orig_path = state.path
-        
+
         for i in xrange(len(state.controller_path)):
             controller = state.controller
             if self._is_exposed(controller, '_default'):
                 state.add_method(controller._default, remainder)
                 state.dispatcher = self
                 return state
-            
+
             if self._is_exposed(controller, '_lookup'):
                 controller, remainder = controller._lookup(*remainder)
                 last_tried_abstraction = getattr(self, '_last_tried_abstraction', None)
                 if type(last_tried_abstraction) != type(controller):
                     self._last_tried_abstraction = controller
                     return self._dispatch_controller('_lookup', controller, state, remainder)
-            
+
             if self._is_exposed(controller, 'index') and\
                method_matches_args(controller.index, state.params, remainder, self._use_lax_params):
                 state.add_method(controller.index, remainder)
                 state.dispatcher = self
                 return state
-            
+
             state.controller_path.pop()
             if len(state.path):
                 remainder = list(remainder)
                 remainder.insert(0, state.path[-1])
                 state.path.pop()
-        
+
         raise HTTPNotFound
 
     def _dispatch(self, state, remainder=None):

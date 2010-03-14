@@ -59,8 +59,8 @@ class RestDispatcher(ObjectDispatcher):
             if sub_controller:
                 remainder = remainder[1:]
                 state.current_controller = sub_controller
-                state.path = '/'.join(remainder)
-                r = self._dispatch_controller(state.path, sub_controller, state, remainder)
+                state.path = remainder
+                r = self._dispatch_controller(remainder[0], sub_controller, state, remainder)
                 if r:
                     return r
         return self._dispatch_first_found_default_or_lookup(state, remainder)

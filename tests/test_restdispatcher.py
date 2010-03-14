@@ -36,14 +36,22 @@ class MockDispatcher(RestDispatcher):
     def other(self):
         pass
 
+class MockEmbeddedRestDispatcherWithArgs(RestDispatcher):
+    def post(self, mock_id):
+        pass
+    def put(self, mock_id):
+        pass
+    def delete(self, mock_id):
+        pass
+
 class MockDispatcherWithArgs(RestDispatcher):
 
-    def post(self, *args, **kw):
+    def post(self, arg1, **kw):
         pass
-
     def other(self, *args):
         pass
-    sub = MockDispatcher()
+    sub = MockEmbeddedRestDispatcherWithArgs()
+
 
 class MockEmbeddedRestDispatcher(RestDispatcher):
     def get_one(self, mock_id):
@@ -198,13 +206,41 @@ class TestDispatcherWithArgs:
         assert state.method.__name__ == 'post'
 
     def test_put(self):
-        req = MockRequest('/sub')
+        req = MockRequest('/sub/asdf', method='put')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
-        assert state.method.__name__ == 'get_all', state.method
+        assert state.method.__name__ == 'put', state.method
+
+    def test_delete(self):
+        req = MockRequest('/sub/asdf', method='delete')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'delete', state.method
 
     def test_other(self):
-        req = MockRequest('/other')
+        req = MockRequest('/other', method='post')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'other'
+
+    @raises(HTTPNotFound)
+    def test_post_bad(self):
+        req = MockRequest('/aaa/aaa', method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'pos', state.method
+
+    @raises(HTTPMethodNotAllowed)
+    def test_other_delete_bad(self):
+        req = MockRequest('/other/asdf', method='delete')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'other'
+
+    @raises(HTTPNotFound)
+    def test_other_delete_not_found(self):
+        req = MockRequest('/not_found', method='delete')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'other'
+
