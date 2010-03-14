@@ -114,18 +114,18 @@ class RestDispatcher(ObjectDispatcher):
 
         current_controller = state.controller
 
-        if (self._is_exposed(current_controller, method_name) or
-           self._is_exposed(current_controller, 'get_%s' % method_name)):
-            method = self._find_first_exposed(current_controller, ('get_%s' % method_name, method_name))
+        get_method = self._find_first_exposed(current_controller, ('get_%s' % method_name, method_name))
+        if get_method:
             new_remainder = remainder[:-1]
-            if method and method_matches_args(method, state.params, new_remainder):
-                state.add_method(method, new_remainder)
+            if method_matches_args(get_method, state.params, new_remainder):
+                state.add_method(get_method, new_remainder)
                 return state
 
     def _handle_custom_method(self, method, state, remainder):
         current_controller = state.controller
         method_name = method
-        method = self._find_first_exposed(current_controller, ('post_%s' % method_name, method_name))
+        http_method = state.request.method
+        method = self._find_first_exposed(current_controller, ('%s_%s' %(http_method, method_name), method_name, 'post_%s' %method_name))
 
         if method and method_matches_args(method, state.params, remainder):
             state.add_method(method, remainder)

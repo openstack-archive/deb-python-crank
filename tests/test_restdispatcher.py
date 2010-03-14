@@ -4,6 +4,8 @@ from crank.restdispatcher import RestDispatcher
 from crank.dispatchstate import DispatchState
 from webob.exc import HTTPNotFound, HTTPMethodNotAllowed
 
+
+
 class MockRequest(object):
 
     def __init__(self, path, method='GET', params=None):
@@ -12,6 +14,7 @@ class MockRequest(object):
         if params is None:
             self.params = {}
         self.method = method
+
 
 class MockDispatcher(RestDispatcher):
 
@@ -51,6 +54,12 @@ class MockDispatcherWithArgs(RestDispatcher):
     def other(self, *args):
         pass
     sub = MockEmbeddedRestDispatcherWithArgs()
+
+
+class MockDispatcherWithVarArgs(RestDispatcher):
+    def get_one(self, *crazy_args):
+        pass
+    sub = MockDispatcher()
 
 
 class MockEmbeddedRestDispatcher(RestDispatcher):
@@ -244,3 +253,58 @@ class TestDispatcherWithArgs:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'other'
 
+class TestDispatcherWithVarArgs:
+
+    def setup(self):
+        self.dispatcher = MockDispatcherWithVarArgs()
+
+    def test_create(self):
+        pass
+
+    def test_delete(self):
+        req = MockRequest('/asdf1/asdf2/asdf3/asdf4/sub')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_all', state.method
+
+class MockCustomMethodDispatcher(RestDispatcher):
+
+    _custom_actions = ['custom']
+
+    def get_custom(self):
+        pass
+
+    def post_custom(self):
+        pass
+
+class TestCustomMethodDispatcher:
+
+    def setup(self):
+        self.dispatcher = MockCustomMethodDispatcher()
+
+    def test_create(self):
+        pass
+
+    def test_post(self):
+        req = MockRequest('/', method='custom')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post_custom', state.method
+
+    def test_post_hacky(self):
+        req = MockRequest('/', params={'_method':'custom'}, method='post')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'post_custom', state.method
+
+    def test_get_hacky(self):
+        req = MockRequest('/', params={'_method':'custom'}, method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_custom', state.method
+
+    def test_get_url(self):
+        req = MockRequest('/custom')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_custom', state.method

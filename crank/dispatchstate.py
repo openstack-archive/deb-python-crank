@@ -11,7 +11,7 @@ class DispatchState(object):
     path the controller takes along the system.
     """
     path = Path()
-    
+
     def __init__(self, request, dispatcher=None, params=None):
         self.request = request
         self.path = request.path_info
@@ -28,7 +28,7 @@ class DispatchState(object):
         self.remainder = None
         self.dispatcher = dispatcher
         self.add_controller('/', dispatcher)
-    
+
     def add_controller(self, location, controller):
         """Add a controller object to the stack"""
         self.controller_path[location] = controller
@@ -43,6 +43,7 @@ class DispatchState(object):
         Add the "intermediate" routing args for a given controller mounted
         at the current_path
         """
+        i = 0
         for i, arg in enumerate(fixed_args):
             if i >= len(remainder):
                 break
