@@ -24,7 +24,7 @@ class DispatchState(object):
     def __init__(self, request, dispatcher=None, params=None, path_info=None):
         self.request = request
 
-        path = url_path
+        path = path_info
         if path is None:
             path = request.path_info[1:]
             path = path.split('/')
