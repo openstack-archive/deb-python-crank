@@ -191,7 +191,7 @@ class Path(collections.deque):
         self.separator = separator
         
         super(Path, self).__init__()
-        
+
         if value is not None:
             self._assign(value)
     

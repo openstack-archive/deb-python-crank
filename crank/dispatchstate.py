@@ -10,12 +10,21 @@ class DispatchState(object):
     us to attach things like routing args and to keep track of the
     path the controller takes along the system.
     """
-    path = Path()
 
     def __init__(self, request, dispatcher=None, params=None):
         self.request = request
-        self.path = request.path_info
-        self.path = self.path[1:]
+
+        path = request.path_info[1:]
+        path = path.split('/')
+        if not path[0]:
+            path = path[1:]
+        try:
+            while not path[-1]:
+                path = path[:-1]
+        except IndexError:
+            pass
+        self.path = path
+            
 
         if params is not None:
             self.params = params

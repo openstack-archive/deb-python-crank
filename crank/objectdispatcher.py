@@ -105,11 +105,18 @@ class ObjectDispatcher(Dispatcher):
         tree until we found a method which matches with a default or lookup method.
         """
 
-        orig_path = state.path
+        print 'state.path', state.path
+        print 'orig_rem', remainder
+        orig_remainder = remainder
+#        orig_path = state.path
 
-        for i in xrange(len(state.controller_path)):
-            controller = state.controller
-            if self._is_exposed(controller, '_default'):
+        remainder = remainder[:]
+        for i, controller in enumerate(reversed(state.controller_path.values())):
+            #controller = state.controller
+#            print controller
+#            print 'exposed', self._is_exposed(controller, '_default')
+            if self._is_exposed(controller, '_default') and\
+               method_matches_args(controller._default, state.params, remainder, self._use_lax_params):
                 state.add_method(controller._default, remainder)
                 state.dispatcher = self
                 return state
@@ -128,12 +135,13 @@ class ObjectDispatcher(Dispatcher):
                 state.add_method(controller.index, remainder)
                 state.dispatcher = self
                 return state
+            print 'rem', remainder
+            print state.path
+            try:
+                remainder.insert(0, state.path[-(i+len(orig_remainder)+1)])
+            except IndexError:
+                break;
 
-            state.controller_path.pop()
-            if len(state.path):
-                remainder = list(remainder)
-                remainder.insert(0, state.path[-1])
-                state.path.pop()
 
         raise HTTPNotFound
 
