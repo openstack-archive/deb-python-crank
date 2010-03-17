@@ -115,11 +115,13 @@ class ObjectDispatcher(Dispatcher):
                 return state
 
             if self._is_exposed(controller, '_lookup'):
-                controller, remainder = controller._lookup(*remainder)
-                last_tried_abstraction = getattr(self, '_last_tried_abstraction', None)
-                if type(last_tried_abstraction) != type(controller):
-                    self._last_tried_abstraction = controller
-                    return self._dispatch_controller('_lookup', controller, state, remainder)
+                new_controller, new_remainder = controller._lookup(*remainder)
+                last_tried_lookup = getattr(self, '_last_tried_lookup', None)
+                if type(last_tried_lookup) != type(new_controller):
+                    self._last_tried_lookup = new_controller
+                    state.add_controller(new_controller.__class__.__name__, new_controller)
+                    dispatcher = getattr(new_controller, '_dispatch', self._dispatch)
+                    return dispatcher(state, new_remainder)
 
             if self._is_exposed(controller, 'index') and\
                method_matches_args(controller.index, state.params, remainder, self._use_lax_params):

@@ -21,6 +21,8 @@ class odict(dict):
         dict.__init__(self, *args, **kw)
 
     def __setitem__(self, key, value):
+        if key in self._ordering:
+            self._ordering.remove(key)
         self._ordering.append(key)
         dict.__setitem__(self, key, value)
 
