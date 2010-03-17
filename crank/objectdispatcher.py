@@ -87,6 +87,7 @@ class ObjectDispatcher(Dispatcher):
            controller-level security.
         """
         if hasattr(controller, '_dispatch'):
+            #xxx do this better
             obj = getattr(controller, 'im_self', controller)
 
             security_check = getattr(obj, '_check_security', None)
