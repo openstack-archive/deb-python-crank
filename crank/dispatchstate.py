@@ -9,9 +9,19 @@ class DispatchState(object):
     of the dispatch as it traverses through the tree.  This allows
     us to attach things like routing args and to keep track of the
     path the controller takes along the system.
+    
+    Arguments:
+        request 
+              object, must have a path_info attribute if path_info is not provided
+        dispatcher
+              dispatcher object to get the ball rolling
+        params
+              parameters to pass into the dispatch state will use request.params
+        path_info
+              pre-split list of path elements, will use request.pathinfo if not used
     """
 
-    def __init__(self, request, dispatcher=None, params=None, url_path=None):
+    def __init__(self, request, dispatcher=None, params=None, path_info=None):
         self.request = request
 
         path = url_path
