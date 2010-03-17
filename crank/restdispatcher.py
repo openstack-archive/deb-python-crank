@@ -207,10 +207,6 @@ class RestDispatcher(ObjectDispatcher):
             remainder = state.path
         current_controller = state.controller
 
-        #remove blanks from the front of the remainder
-        while remainder and not remainder[0]:
-            remainder = remainder[1:]
-
         #log.debug('Entering dispatch for remainder: %s in controller %s'%(remainder, self))
         if not hasattr(state, 'http_method'):
             method = state.request.method.lower()

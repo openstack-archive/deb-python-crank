@@ -30,6 +30,18 @@ class TestDispatchState:
         self.state.add_method('a', 'b')
         assert self.state.method == 'a'
         assert self.state.remainder == 'b'
+        
+    def test_use_path_info(self):
+        state = DispatchState(self.request, self.dispatcher, path_info=['a', 'b'])
+        assert state.path == ['a', 'b'], state.path
+        
+    def test_path_info_with_blanks(self):
+        state = DispatchState(self.request, self.dispatcher, path_info=['', 'a', 'b', '',''])
+        assert state.path == ['a', 'b'], state.path
+
+    def test_path_info_blank(self):
+        state = DispatchState(self.request, self.dispatcher, path_info=[])
+        assert state.path == [], state.path
 
     def test_add_routing_args(self):
         current_path = 'current'
