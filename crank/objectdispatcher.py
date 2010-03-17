@@ -107,12 +107,10 @@ class ObjectDispatcher(Dispatcher):
 
         print 'state.path', state.path
         print 'orig_rem', remainder
-        orig_remainder = remainder
-#        orig_path = state.path
+        orig_remainder_len = len(remainder)
 
         remainder = remainder[:]
         for i, controller in enumerate(reversed(state.controller_path.values())):
-            #controller = state.controller
 #            print controller
 #            print 'exposed', self._is_exposed(controller, '_default')
             if self._is_exposed(controller, '_default') and\
@@ -138,10 +136,9 @@ class ObjectDispatcher(Dispatcher):
             print 'rem', remainder
             print state.path
             try:
-                remainder.insert(0, state.path[-(i+len(orig_remainder)+1)])
+                remainder.insert(0, state.path[-(i+orig_remainder_len+1)])
             except IndexError:
-                break;
-
+                break
 
         raise HTTPNotFound
 

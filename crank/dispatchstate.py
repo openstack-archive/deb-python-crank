@@ -11,13 +11,18 @@ class DispatchState(object):
     path the controller takes along the system.
     """
 
-    def __init__(self, request, dispatcher=None, params=None):
+    def __init__(self, request, dispatcher=None, params=None, url_path=None):
         self.request = request
 
-        path = request.path_info[1:]
-        path = path.split('/')
-        if not path[0]:
-            path = path[1:]
+        path = url_path
+        if path is None:
+            path = request.path_info[1:]
+            path = path.split('/')
+        try:
+            if not path[0]:
+                path = path[1:]
+        except IndexError:
+            pass
         try:
             while not path[-1]:
                 path = path[:-1]
