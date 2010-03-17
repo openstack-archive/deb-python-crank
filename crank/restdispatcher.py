@@ -34,7 +34,7 @@ class RestDispatcher(ObjectDispatcher):
 
         method_name = method
         method = self._find_first_exposed(current_controller, [method,])
-        if method and method_matches_args(method, state.params, remainder):
+        if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
             state.add_method(method, remainder)
             return state
 
@@ -103,7 +103,7 @@ class RestDispatcher(ObjectDispatcher):
         if self._is_exposed(current_controller, method_name):
             method = getattr(current_controller, method_name)
             new_remainder = remainder[:-1]
-            if method and method_matches_args(method, state.params, new_remainder):
+            if method and method_matches_args(method, state.params, new_remainder, self._use_lax_params):
                 state.add_method(method, new_remainder)
                 return state
 
@@ -117,7 +117,7 @@ class RestDispatcher(ObjectDispatcher):
         get_method = self._find_first_exposed(current_controller, ('get_%s' % method_name, method_name))
         if get_method:
             new_remainder = remainder[:-1]
-            if method_matches_args(get_method, state.params, new_remainder):
+            if method_matches_args(get_method, state.params, new_remainder, self._use_lax_params):
                 state.add_method(get_method, new_remainder)
                 return state
 
@@ -127,7 +127,7 @@ class RestDispatcher(ObjectDispatcher):
         http_method = state.request.method
         method = self._find_first_exposed(current_controller, ('%s_%s' %(http_method, method_name), method_name, 'post_%s' %method_name))
 
-        if method and method_matches_args(method, state.params, remainder):
+        if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
             state.add_method(method, remainder)
             return state
 
@@ -173,7 +173,7 @@ class RestDispatcher(ObjectDispatcher):
             return self._dispatch_controller(current_path, current_controller, state, remainder[1:])
 
         method = self._find_first_exposed(current_controller, ('get_one', 'get'))
-        if method and method_matches_args(method, state.params, remainder):
+        if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
             state.add_method(method, remainder)
             return state
 
