@@ -76,6 +76,9 @@ class ObjectDispatcher(Dispatcher):
         """
         return ismethod(getattr(controller, name, False))
 
+    def __call__(self, state, remainder=None):
+        return self._dispatch(state, remainder)
+
     def _dispatch_controller(self, current_path, controller, state, remainder):
         """
            Essentially, this method defines what to do when we move to the next
@@ -92,7 +95,7 @@ class ObjectDispatcher(Dispatcher):
 
             security_check = getattr(obj, '_check_security', None)
             if security_check:
-                security_check()
+                obj._check_security()
             state.add_controller(current_path, controller)
             state.dispatcher = controller
             return controller._dispatch(state, remainder)
@@ -151,8 +154,13 @@ class ObjectDispatcher(Dispatcher):
             remainder = state.path
         current_controller = state.controller
 
+        #skip any empty urls
+        if remainder and not(remainder[0]):
+            return self._dispatch(state, remainder[1:])
+
         if hasattr(current_controller, '_check_security'):
             current_controller._check_security()
+
         #we are plumb out of path, check for index
         if not remainder:
             if self._is_exposed(current_controller, 'index') and \
@@ -181,9 +189,3 @@ class ObjectDispatcher(Dispatcher):
 
         #dispatch not found
         return self._dispatch_first_found_default_or_lookup(state, remainder)
-
-    def _setup_wsgiorg_routing_args(self, path, remainder, params):
-        """
-        This is expected to be overridden by any subclass that wants to set
-        the routing_args (RestController). Do not delete.
-        """

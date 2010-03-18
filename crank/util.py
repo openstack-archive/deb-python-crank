@@ -156,6 +156,9 @@ def method_matches_args(method, params, remainder, lax_params=False):
     else:
         argvals = []
 
+
+    params = params.copy()
+
     #remove the appropriate remainder quotient
     if len(remainder)<len(required_vars):
         #pull the first few off with the remainder
@@ -168,6 +171,10 @@ def method_matches_args(method, params, remainder, lax_params=False):
     for var in required_vars[:]:
         if var in params:
             required_vars.pop(0)
+            # remove the param from the params so when we see if
+            # there are params that arent in the non-required vars we
+            # can evaluate properly
+            del params[var]
         else:
             break;
 
@@ -189,40 +196,40 @@ def method_matches_args(method, params, remainder, lax_params=False):
 class Path(collections.deque):
     def __init__(self, value=None, separator='/'):
         self.separator = separator
-        
+
         super(Path, self).__init__()
 
         if value is not None:
             self._assign(value)
-    
+
     def _assign(self, value):
         separator = self.separator
         self.clear()
-        
+
         if isinstance(value, (str, unicode)):
             self.extend(value.split(separator))
             return
-        
+
         self.extend(value)
-    
+
     def __set__(self, obj, value):
         self._assign(value)
 
     def __str__(self):
         return str(self.separator).join(self)
-    
+
     def __unicode__(self):
         return unicode(self.separator).join(self)
 
     def __repr__(self):
         return "<Path %r>" % super(Path, self).__repr__()
-    
+
     def __cmp__(self, other):
         return cmp(type(other)(self), other)
-    
+
     def __getitem__(self, i):
         try:
             return super(Path, self).__getitem__(i)
-        
+
         except TypeError:
             return Path([self[i] for i in xrange(*i.indices(len(self)))])

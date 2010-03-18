@@ -108,8 +108,9 @@ class RestDispatcher(ObjectDispatcher):
                 return state
 
     def _handle_custom_get(self, state, remainder):
+        controller = state.controller
         method_name = remainder[-1]
-        if method_name not in getattr(self, '_custom_actions', []):
+        if method_name not in getattr(controller, '_custom_actions', []):
             return
 
         current_controller = state.controller
