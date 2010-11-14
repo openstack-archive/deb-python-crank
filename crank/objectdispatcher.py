@@ -110,24 +110,35 @@ class ObjectDispatcher(Dispatcher):
         """
 
         try:
-            m_type, meth, m_remainder, warning = state._notfound_stack.pop()
-            if warning:
-                warn(warning, DeprecationWarning)
-
-            if m_type == 'lookup':
-                new_controller, new_remainder = meth(*m_remainder)
-                state.add_controller(new_controller.__class__.__name__, new_controller)
-                dispatcher = getattr(new_controller, '_dispatch', self._dispatch)
-                return dispatcher(state, new_remainder)
-
-            elif m_type == 'default':
-                state.add_method(meth, m_remainder)
-                state.dispatcher = self
-                return state
-                
+            if not state._notfound_stack:
+                #see if there is an index
+                current_controller = state.controller
+                method = getattr(current_controller, 'index')
+                if method:
+                    if method_matches_args(method, state.params, remainder, self._use_lax_params):
+                        state.add_method(current_controller.index, remainder)
+                        return state
+                raise HTTPNotFound
             else:
-                assert False, 'Unknown notfound hander %r' % m_type
-        except:
+            
+                m_type, meth, m_remainder, warning = state._notfound_stack.pop()
+                if warning:
+                    warn(warning, DeprecationWarning)
+    
+                if m_type == 'lookup':
+                    new_controller, new_remainder = meth(*m_remainder)
+                    state.add_controller(new_controller.__class__.__name__, new_controller)
+                    dispatcher = getattr(new_controller, '_dispatch', self._dispatch)
+                    return dispatcher(state, new_remainder)
+    
+                elif m_type == 'default':
+                    state.add_method(meth, m_remainder)
+                    state.dispatcher = self
+                    return state
+                else:
+                    assert False, 'Unknown notfound hander %r' % m_type
+        #xxx: seriously, this needs to be better
+        except Exception, e:
             raise HTTPNotFound
 
     def _dispatch(self, state, remainder=None):
