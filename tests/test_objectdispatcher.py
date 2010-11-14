@@ -105,6 +105,12 @@ class TestDispatcher:
 
     def test_create(self):
         pass
+    
+    def test_call(self):
+        req = MockRequest('/')
+        state = DispatchState(req)
+        state = self.dispatcher(state, [])
+        assert state.method.__name__ == 'index', state.method
 
     def test_dispatch_index(self):
         req = MockRequest('/')
@@ -135,6 +141,12 @@ class TestDispatcher:
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'with_args', state.method
+
+    def test_controller_method_with_empty_args(self):
+        req = MockRequest('/with_args//a/b')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == '_default', state.method
 
     def test_controller_method_with_args(self):
         req = MockRequest('/with_args/a/b')

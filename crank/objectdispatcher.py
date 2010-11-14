@@ -124,23 +124,17 @@ class ObjectDispatcher(Dispatcher):
             else:
             
                 m_type, meth, m_remainder, warning = state._notfound_stack.pop()
-                if warning:
-                    warn(warning, DeprecationWarning)
     
                 if m_type == 'lookup':
                     new_controller, new_remainder = meth(*m_remainder)
                     state.add_controller(new_controller.__class__.__name__, new_controller)
                     dispatcher = getattr(new_controller, '_dispatch', self._dispatch)
                     return dispatcher(state, new_remainder)
-    
                 elif m_type == 'default':
                     state.add_method(meth, m_remainder)
                     state.dispatcher = self
                     return state
-                else:
-                    assert False, 'Unknown notfound hander %r' % m_type
-        #xxx: seriously, this needs to be better
-        except Exception, e:
+        except AttributeError, e:
             raise HTTPNotFound
 
     def _dispatch(self, state, remainder=None):
@@ -202,7 +196,4 @@ class ObjectDispatcher(Dispatcher):
             state._notfound_stack.append(('lookup', current_controller._lookup, remainder, None))
         if self._is_exposed(current_controller, '_default'):
             state._notfound_stack.append(('default', current_controller._default, remainder, None))
-        elif self._is_exposed(current_controller, 'default'):
-            state._notfound_stack.append(('default', current_controller.default, remainder,
-                                          'default method is deprecated, please replace with _default'))
             
