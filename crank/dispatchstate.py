@@ -52,6 +52,7 @@ class DispatchState(object):
         self.remainder = None
         self.dispatcher = dispatcher
         self.add_controller('/', dispatcher)
+        self._notfound_stack = []
 
     def add_controller(self, location, controller):
         """Add a controller object to the stack"""
