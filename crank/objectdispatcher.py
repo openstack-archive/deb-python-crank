@@ -89,16 +89,18 @@ class ObjectDispatcher(Dispatcher):
            Also, this is the place where the controller is checked for
            controller-level security.
         """
-        if hasattr(controller, '_dispatch'):
+        
+        dispatcher = getattr(controller, '_dispatch', None)
+        if dispatcher:
             #xxx do this better
             obj = getattr(controller, 'im_self', controller)
 
             security_check = getattr(obj, '_check_security', None)
             if security_check:
-                obj._check_security()
+                security_check()
             state.add_controller(current_path, controller)
             state.dispatcher = controller
-            return controller._dispatch(state, remainder)
+            return dispatcher(state, remainder)
         state.add_controller(current_path, controller)
         return self._dispatch(state, remainder)
 
@@ -180,8 +182,8 @@ class ObjectDispatcher(Dispatcher):
                 return state
 
         #another controller is found
-        if hasattr(current_controller, current_path):
-            current_controller = getattr(current_controller, current_path)
+        current_controller = getattr(current_controller, current_path, None)
+        if current_controller:
             return self._dispatch_controller(
                 current_path, current_controller, state, remainder[1:])
 
@@ -193,8 +195,9 @@ class ObjectDispatcher(Dispatcher):
         onto the stack
         '''
         current_controller = state.controller
-        if hasattr(current_controller, '_check_security'):
-            current_controller._check_security()
+        security_check = getattr(current_controller, '_check_security', None)
+        if security_check:
+            security_check()
         if self._is_exposed(current_controller, '_lookup'):
             state._notfound_stack.append(('lookup', current_controller._lookup, remainder, None))
         if self._is_exposed(current_controller, '_default'):
