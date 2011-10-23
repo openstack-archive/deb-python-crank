@@ -28,6 +28,8 @@ class DispatchState(object):
         if path is None:
             path = request.path_info[1:]
             path = path.split('/')
+        elif isinstance(path, basestring):
+            path = path.split('/')
         try:
             if not path[0]:
                 path = path[1:]
