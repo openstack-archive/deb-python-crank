@@ -61,4 +61,16 @@ class TestDispatchState:
         mock = MockController()
         self.state.add_controller('mock', mock)
         assert self.state.controller == mock
-
+        
+    def test_init_with_extension(self):
+        r = MockRequest()
+        r.path_info = 'something.json'
+        state = DispatchState(r)
+        assert state.extension == 'json'
+        
+    def test_init_with_string_path(self):
+        r = MockRequest()
+        r.path_info = 'something.json'
+        state = DispatchState(r, path_info='s1/s2')
+        assert state.path == ['s1', 's2']
+        

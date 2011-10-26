@@ -27,6 +27,7 @@ class DispatchState(object):
         path = path_info
         if path is None:
             path = request.path_info[1:]
+
             path = path.split('/')
         elif isinstance(path, basestring):
             path = path.split('/')
@@ -40,6 +41,17 @@ class DispatchState(object):
                 path = path[:-1]
         except IndexError:
             pass
+
+        self.extension = None
+
+        #rob the extension
+        if len(path) > 0 and '.' in path[-1]:
+            end = path[-1]
+            end = end.split('.')
+            self.extension = end[-1]
+            path[-1] = '.'.join(end[:-1])
+                
+
         self.path = path
             
 

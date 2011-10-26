@@ -111,33 +111,30 @@ class ObjectDispatcher(Dispatcher):
         tree until we found a method which matches with a default or lookup method.
         """
 
-        try:
-            if not state._notfound_stack:
-                #see if there is an index
-                current_controller = state.controller
-                method = getattr(current_controller, 'index', None)
-                if method:
-                    if method_matches_args(method, state.params, remainder, self._use_lax_params):
-                        state.add_method(current_controller.index, remainder)
-                        return state
-                raise HTTPNotFound
-            else:
-            
-                m_type, meth, m_remainder, warning = state._notfound_stack.pop()
-    
-                if m_type == 'lookup':
-                    new_controller, new_remainder = meth(*m_remainder)
-                    state.add_controller(new_controller.__class__.__name__, new_controller)
-                    dispatcher = getattr(new_controller, '_dispatch', self._dispatch)
-                    r = dispatcher(state, new_remainder)
-                    return r
-                elif m_type == 'default':
-                    state.add_method(meth, m_remainder)
-                    state.dispatcher = self
+        if not state._notfound_stack:
+            #see if there is an index
+            current_controller = state.controller
+            method = getattr(current_controller, 'index', None)
+            if method:
+                if method_matches_args(method, state.params, remainder, self._use_lax_params):
+                    state.add_method(current_controller.index, remainder)
                     return state
-        except AttributeError, e:
-            print e
             raise HTTPNotFound
+        else:
+        
+            m_type, meth, m_remainder, warning = state._notfound_stack.pop()
+
+            if m_type == 'lookup':
+                new_controller, new_remainder = meth(*m_remainder)
+                state.add_controller(new_controller.__class__.__name__, new_controller)
+                dispatcher = getattr(new_controller, '_dispatch', self._dispatch)
+                r = dispatcher(state, new_remainder)
+                return r
+            elif m_type == 'default':
+                state.add_method(meth, m_remainder)
+                state.dispatcher = self
+                return state
+#        raise HTTPNotFound
 
     def _dispatch(self, state, remainder=None):
         """
