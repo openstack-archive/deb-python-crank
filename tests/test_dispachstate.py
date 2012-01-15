@@ -24,7 +24,7 @@ class TestDispatchState:
     def test_add_controller(self):
         mock = MockController()
         self.state.add_controller('mock', mock)
-        assert self.state.controller_path['mock'] == mock
+        assert dict(self.state.controller_path)['mock'] == mock
 
     def test_add_method(self):
         self.state.add_method('a', 'b')

@@ -21,7 +21,7 @@ class DispatchState(object):
               pre-split list of path elements, will use request.pathinfo if not used
     """
 
-    def __init__(self, request, dispatcher=None, params=None, path_info=None):
+    def __init__(self, request, dispatcher=None, params=None, path_info=None, ignore_parameters=None):
         self.request = request
 
         path = path_info
@@ -60,7 +60,15 @@ class DispatchState(object):
         else:
             self.params = request.params
 
-        self.controller_path = odict()
+        #remove the ignore params from self.params
+        if ignore_parameters:
+            remove_params = ignore_parameters
+            for param in remove_params:
+                if param in self.params:
+                    del self.params[param]
+
+        self.controller = None
+        self.controller_path = []
         self.routing_args = {}
         self.method = None
         self.remainder = None
@@ -70,7 +78,8 @@ class DispatchState(object):
 
     def add_controller(self, location, controller):
         """Add a controller object to the stack"""
-        self.controller_path[location] = controller
+        self.controller = controller
+        self.controller_path.append((location, controller))
 
     def add_method(self, method, remainder):
         """Add the final method that will be called in the _call method"""
@@ -90,8 +99,3 @@ class DispatchState(object):
         remainder = remainder[i:]
         if var_args and remainder:
             self.routing_args[current_path] = remainder
-
-    @property
-    def controller(self):
-        """returns the current controller"""
-        return self.controller_path.getitem(-1)
