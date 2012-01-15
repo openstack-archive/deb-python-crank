@@ -76,11 +76,11 @@ def mock_f(self, a, b, c=None, d=50, *args, **kw):
 
 def test_get_argspec_first_call():
     argspec = get_argspec(mock_f)
-    assert argspec == ArgSpec(args=['self', 'a', 'b', 'c', 'd'], varargs='args', keywords='kw', defaults=(None, 50)), argspec
+    assert argspec == (['a', 'b', 'c', 'd'], 'args', 'kw', (None, 50)), argspec
 
 def test_get_argspec_cached():
     argspec = get_argspec(mock_f)
-    assert argspec == ArgSpec(args=['self', 'a', 'b', 'c', 'd'], varargs='args', keywords='kw', defaults=(None, 50)), argspec
+    assert argspec == (['a', 'b', 'c', 'd'], 'args', 'kw', (None, 50)), argspec
 
 def test_get_params_with_argspec():
     params = get_params_with_argspec(mock_f, {'a':1, 'c':2}, [3])

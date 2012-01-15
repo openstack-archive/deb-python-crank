@@ -74,10 +74,8 @@ class RestDispatcher(ObjectDispatcher):
                 break
         if method is None:
             return
-        args = get_argspec(getattr(current_controller, method))
-        fixed_args = args[0][1:]
+        fixed_args, var_args, kws, kw_args = get_argspec(getattr(current_controller, method))
         fixed_arg_length = len(fixed_args)
-        var_args = args[1]
         if var_args:
             for i, item in enumerate(remainder):
                 if hasattr(current_controller, item) and self._is_controller(current_controller, item):
@@ -110,8 +108,6 @@ class RestDispatcher(ObjectDispatcher):
     def _handle_custom_get(self, state, remainder):
         controller = state.controller
         method_name = remainder[-1]
-        if method_name not in getattr(controller, '_custom_actions', []):
-            return
 
         current_controller = state.controller
 

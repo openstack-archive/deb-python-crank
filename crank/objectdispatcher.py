@@ -166,20 +166,21 @@ class ObjectDispatcher(Dispatcher):
             return self._dispatch_first_found_default_or_lookup(state, remainder)
 
         current_path = remainder[0]
+        current_args = remainder[1:]
 
         #an exposed method matching the path is found
         if self._is_exposed(current_controller, current_path):
             #check to see if the argspec jives
             controller = getattr(current_controller, current_path)
-            if method_matches_args(controller, state.params, remainder[1:], self._use_lax_params):
-                state.add_method(controller, remainder[1:])
+            if method_matches_args(controller, state.params, current_args, self._use_lax_params):
+                state.add_method(controller, current_args)
                 return state
 
         #another controller is found
         current_controller = getattr(current_controller, current_path, None)
         if current_controller:
             return self._dispatch_controller(
-                current_path, current_controller, state, remainder[1:])
+                current_path, current_controller, state, current_args)
 
         #dispatch not found
         return self._dispatch_first_found_default_or_lookup(state, remainder)
@@ -192,8 +193,8 @@ class ObjectDispatcher(Dispatcher):
         security_check = getattr(current_controller, '_check_security', None)
         if security_check:
             security_check()
-        if self._is_exposed(current_controller, '_lookup'):
+        if hasattr(current_controller, '_lookup') and self._is_exposed(current_controller, '_lookup'):
             state._notfound_stack.append(('lookup', current_controller._lookup, remainder, None))
-        if self._is_exposed(current_controller, '_default'):
+        if hasattr(current_controller, '_default') and self._is_exposed(current_controller, '_default'):
             state._notfound_stack.append(('default', current_controller._default, remainder, None))
             

@@ -72,19 +72,29 @@ def get_argspec(func):
         im_func = func.im_func
     except AttributeError:
         im_func = func
+
     try:
         argspec = _cached_argspecs[im_func]
     except KeyError:
-        argspec = _cached_argspecs[im_func] = getargspec(func)
+        spec = getargspec(im_func)
+        argvals = spec[3]
+
+        # this is a work around for a crappy api choice in getargspec
+        if argvals is None:
+            argvals = []
+
+        argspec = _cached_argspecs[im_func] = (spec[0][1:], spec[1], spec[2], argvals)
+
     return argspec
 
 def get_params_with_argspec(func, params, remainder):
-    params = params.copy()
-    argspec = get_argspec(func)
-    argvars = argspec[0][1:]
-    if argvars and enumerate(remainder):
+    argvars, var_args, argkws, argvals = get_argspec(func)
+
+    if argvars and remainder:
+        params = params.copy()
+        remainder_len = len(remainder)
         for i, var in enumerate(argvars):
-            if i >= len(remainder):
+            if i >= remainder_len:
                 break
             params[var] = remainder[i]
     return params
@@ -95,18 +105,12 @@ def remove_argspec_params_from_params(func, params, remainder):
        Returns: params, remainder"""
 
     # figure out which of the vars in the argspec are required
-    argspec = get_argspec(func)
-    argvars = argspec[0][1:]
+    argvars, var_args, argkws, argvals = get_argspec(func)
 
     # if there are no required variables, or the remainder is none, we
     # have nothing to do
     if not argvars or not remainder:
         return params, remainder
-
-    # this is a work around for a crappy api choice in getargspec
-    argvals = argspec[3]
-    if argvals is None:
-        argvals = []
 
     required_vars = argvars
     optional_vars = []
@@ -120,9 +124,10 @@ def remove_argspec_params_from_params(func, params, remainder):
     # replace the existing required variables with the values that come in
     # from params. these could be the parameters that come off of validation.
     remainder = list(remainder)
+    remainder_len = len(remainder)
     for i, var in enumerate(required_vars):
         val = params.get(var, None)
-        if i < len(remainder) and val:
+        if i < remainder_len and val:
             remainder[i] = val
         elif val:
             remainder.append(val)
@@ -146,9 +151,7 @@ def method_matches_args(method, params, remainder, lax_params=False):
 
     It is very likely that this method would go into ObjectDispatch in the future.
     """
-    argspec = get_argspec(method)
-    argvars = argspec[0][1:]
-    argvals = argspec[3]
+    argvars, ovar_args, argkws, argvals = get_argspec(method)
 
     required_vars = argvars
     if argvals:
@@ -179,13 +182,13 @@ def method_matches_args(method, params, remainder, lax_params=False):
             break;
 
     #make sure no params exist if keyword argumnts are missing
-    if not lax_params and argspec[2] is None and params:
+    if not lax_params and argkws is None and params:
         return False
 
     #make sure all of the non-optional-vars are there
     if not required_vars:
         #there are more args in the remainder than are available in the argspec
-        if len(argvars)<len(remainder) and not argspec[1]:
+        if len(argvars)<len(remainder) and not ovar_args:
             return False
         return True
 
