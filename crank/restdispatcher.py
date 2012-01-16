@@ -148,6 +148,11 @@ class RestDispatcher(ObjectDispatcher):
             if method:
                 state.add_method(method, remainder)
                 return state
+            if self._is_exposed(current_controller, 'get_one'):
+                method = current_controller.get_one
+                if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
+                    state.add_method(method, remainder)
+                    return state
             return self._dispatch_first_found_default_or_lookup(state, remainder)
 
         #test for "delete", "edit" or "new"
