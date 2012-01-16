@@ -156,9 +156,6 @@ def method_matches_args(method, params, remainder, lax_params=False):
     required_vars = argvars
     if argvals:
         required_vars = argvars[:-len(argvals)]
-    else:
-        argvals = []
-
 
     params = params.copy()
 
@@ -180,6 +177,12 @@ def method_matches_args(method, params, remainder, lax_params=False):
             del params[var]
         else:
             break;
+
+    #remove params that have a default value
+    vars_with_default = argvars[len(argvars)-len(argvals):]
+    for var in vars_with_default:
+        if var in params:
+            del params[var]
 
     #make sure no params exist if keyword argumnts are missing
     if not lax_params and argkws is None and params:
