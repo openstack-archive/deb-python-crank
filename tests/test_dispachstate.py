@@ -34,6 +34,10 @@ class TestDispatchState:
     def test_use_path_info(self):
         state = DispatchState(self.request, self.dispatcher, path_info=['a', 'b'])
         assert state.path == ['a', 'b'], state.path
+
+    def test_ignore_parameters(self):
+        state = DispatchState(self.request, self.dispatcher, {'a':1, 'z':5}, ignore_parameters=['z'])
+        assert state.params == {'a':1}, state.params
         
     def test_path_info_with_blanks(self):
         state = DispatchState(self.request, self.dispatcher, path_info=['', 'a', 'b', '',''])
@@ -73,4 +77,4 @@ class TestDispatchState:
         r.path_info = 'something.json'
         state = DispatchState(r, path_info='s1/s2')
         assert state.path == ['s1', 's2']
-        
+

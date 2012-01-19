@@ -1,7 +1,7 @@
 """
 This module implements the :class:`DispatchState` class
 """
-from util import odict, Path
+from util import Path
 
 class DispatchState(object):
     """

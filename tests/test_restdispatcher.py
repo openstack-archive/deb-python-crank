@@ -81,6 +81,10 @@ class MockSimpleDispatcher(RestDispatcher):
     def delete(self):
         pass
 
+class MockMinimalRestDispatcher(RestDispatcher):
+    def get_one(self):
+        pass
+
 class TestDispatcher:
 
     def setup(self):
@@ -201,6 +205,20 @@ class TestEmbeddedRestDispatcher:
         assert state.method.__name__ == 'post_delete', state.method
         assert state.controller.__class__.__name__ == 'MockDispatcher', state.controller
         assert state.params == {}, state.params
+
+class TestMinimalRestDispatcher:
+
+    def setup(self):
+        self.dispatcher = MockMinimalRestDispatcher()
+
+    def test_create(self):
+        pass
+
+    def test_get_all_fallback_on_get_one(self):
+        req = MockRequest('/')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'get_one'
 
 class TestDispatcherWithArgs:
 
