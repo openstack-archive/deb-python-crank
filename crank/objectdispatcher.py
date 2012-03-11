@@ -16,8 +16,8 @@ class which provides the ordinary TurboGears mechanism.
 
 """
 
-from util import get_argspec, method_matches_args
-from dispatcher import Dispatcher
+from crank.util import get_argspec, method_matches_args
+from crank.dispatcher import Dispatcher
 from webob.exc import HTTPNotFound
 from inspect import ismethod
 
@@ -62,6 +62,7 @@ class ObjectDispatcher(Dispatcher):
 
     #Change to True to allow extra params to pass thru the dispatch
     _use_lax_params = False
+    _use_index_fallback = True
 
     def _is_exposed(self, controller, name):
         """Override this function to define how a controller method is
@@ -112,13 +113,14 @@ class ObjectDispatcher(Dispatcher):
         """
 
         if not state._notfound_stack:
-            #see if there is an index
-            current_controller = state.controller
-            method = getattr(current_controller, 'index', None)
-            if method:
-                if method_matches_args(method, state.params, remainder, self._use_lax_params):
-                    state.add_method(current_controller.index, remainder)
-                    return state
+            if self._use_index_fallback:
+                #see if there is an index
+                current_controller = state.controller
+                method = getattr(current_controller, 'index', None)
+                if method:
+                    if method_matches_args(method, state.params, remainder, self._use_lax_params):
+                        state.add_method(current_controller.index, remainder)
+                        return state
             raise HTTPNotFound
         else:
         

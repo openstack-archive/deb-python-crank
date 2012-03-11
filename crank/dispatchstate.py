@@ -1,7 +1,7 @@
 """
 This module implements the :class:`DispatchState` class
 """
-from util import Path
+from crank.util import Path
 
 class DispatchState(object):
     """

@@ -180,6 +180,17 @@ class TestDispatcher:
         state = mock_dispatcher_with_index_with_argvars._dispatch(state)
         assert state.method.__name__ == 'index', state.method
 
+    @raises(HTTPNotFound)
+    def test_controller_method_with_args_missing_args_index_disabled(self):
+        req = MockRequest('/with_args/a')
+        state = DispatchState(req, mock_dispatcher_with_index_with_argvars)
+        
+        try:
+            mock_dispatcher_with_index_with_argvars._use_index_fallback = False
+            state = mock_dispatcher_with_index_with_argvars._dispatch(state)
+        finally:
+            mock_dispatcher_with_index_with_argvars._use_index_fallback = True
+
     @raises(MockError)
     def test_check_security(self):
         req = MockRequest('/with_args/a')
