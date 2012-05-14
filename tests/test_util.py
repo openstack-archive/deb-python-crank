@@ -1,8 +1,13 @@
 # encoding: utf-8
-
+import sys
 from nose.tools import raises
 from crank.util import *
-from inspect import ArgSpec
+
+_PY3 = bool(sys.version_info[0] == 3)
+if _PY3:
+    def u(s): return s
+else:
+    def u(s): return s.decode('utf-8')
 
 def mock_f(self, a, b, c=None, d=50, *args, **kw):
     pass
@@ -169,18 +174,21 @@ def test_path_unicode():
     
     cases = [
             ('/', "/"),
-            (u'/©', u'/©'),
-            (u'/©/™', u'/©/™'),
-            (u'/©/™/', u'/©/™/'),
-            ((u'¡', ), u'¡'),
-            (('foo', u'¡'), u'foo/¡')
+            (u('/©'), u('/©')),
+            (u('/©/™'), u('/©/™')),
+            (u('/©/™/'), u('/©/™/')),
+            ((u('¡'), ), u('¡')),
+            (('foo', u('¡')), u('foo/¡'))
         ]
     
     for case, expected in cases:
         instance = MockOb()
         instance.path = case
-        
-        yield assert_path, instance, expected, unicode
+
+        if _PY3:
+            yield assert_path, instance, expected, str
+        else:
+            yield assert_path, instance, expected, unicode
 
 def test_path_slicing():
     class MockOb(object):
@@ -199,4 +207,4 @@ def test_path_comparison():
     assert Path('/foo') == ('', 'foo'), 'tuple comparison'
     assert Path('/foo') == ['', 'foo'], 'list comparison'
     assert Path('/foo') == '/foo', 'string comparison'
-    assert Path(u'/föö') == u'/föö', 'string comparison'
+    assert Path(u('/föö')) == u('/föö'), 'string comparison'

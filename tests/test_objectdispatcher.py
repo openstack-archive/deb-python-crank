@@ -1,8 +1,15 @@
 # encoding: utf-8
+import sys
 from nose.tools import raises
 from crank.objectdispatcher import *
 from crank.dispatchstate import DispatchState
 from webob.exc import HTTPNotFound
+
+_PY3 = bool(sys.version_info[0] == 3)
+if _PY3:
+    def u(s): return s
+else:
+    def u(s): return s.decode('utf-8')
 
 class MockRequest(object):
 
@@ -125,7 +132,7 @@ class TestDispatcher:
         assert state.method.__name__ == '_default', state.method
 
     def test_dispatch_default_with_unicode(self):
-        req = MockRequest('/', params={u'å':u'ß'})
+        req = MockRequest('/', params={u('å'):u('ß')})
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == '_default', state.method
@@ -137,7 +144,7 @@ class TestDispatcher:
         assert state.method.__name__ == 'no_args', state.method
 
     def test_controller_method_with_unicode_args(self):
-        req = MockRequest(u'/with_args/å/ß')
+        req = MockRequest(u('/with_args/å/ß'))
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'with_args', state.method

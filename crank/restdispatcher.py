@@ -6,8 +6,8 @@ combines controller decoration for TG-Controller behavior.
 """
 from inspect import ismethod
 from webob.exc import HTTPMethodNotAllowed
-from util import get_argspec, method_matches_args
-from objectdispatcher import ObjectDispatcher
+from crank.util import get_argspec, method_matches_args
+from crank.objectdispatcher import ObjectDispatcher
 
 class RestDispatcher(ObjectDispatcher):
     """Defines a restful interface for a set of HTTP verbs.

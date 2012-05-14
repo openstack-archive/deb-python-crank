@@ -5,7 +5,7 @@ Copyright (c) Chrispther Perkins
 MIT License
 """
 
-import collections
+import collections, sys
 
 __all__ = [
         'get_argspec', 'get_params_with_argspec', 'remove_argspec_params_from_params', 'method_matches_args',
@@ -146,6 +146,7 @@ def method_matches_args(method, params, remainder, lax_params=False):
 
     return False
 
+_PY3 = bool(sys.version_info[0] == 3)
 
 class Path(collections.deque):
     def __init__(self, value=None, separator='/'):
@@ -160,7 +161,12 @@ class Path(collections.deque):
         separator = self.separator
         self.clear()
 
-        if isinstance(value, (str, unicode)):
+        if _PY3: # pragma: no cover
+            string_types = str
+        else: # pragma: no cover
+            string_types = basestring
+
+        if isinstance(value, string_types):
             self.extend(value.split(separator))
             return
 
@@ -172,18 +178,19 @@ class Path(collections.deque):
     def __str__(self):
         return str(self.separator).join(self)
 
-    def __unicode__(self):
+    def __unicode__(self): # pragma: no cover
+        #unused on PY3
         return unicode(self.separator).join(self)
 
     def __repr__(self):
         return "<Path %r>" % super(Path, self).__repr__()
 
-    def __cmp__(self, other):
-        return cmp(type(other)(self), other)
+    def __eq__(self, other):
+        return type(other)(self) == other
 
     def __getitem__(self, i):
         try:
             return super(Path, self).__getitem__(i)
 
         except TypeError:
-            return Path([self[i] for i in xrange(*i.indices(len(self)))])
+            return Path([self[i] for i in range(*i.indices(len(self)))])

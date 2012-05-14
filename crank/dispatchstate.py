@@ -3,6 +3,11 @@ This module implements the :class:`DispatchState` class
 """
 from crank.util import Path
 
+try:
+    string_type = basestring
+except NameError: # pragma: no cover
+    string_type = str
+
 class DispatchState(object):
     """
     This class keeps around all the pertainent info for the state
@@ -29,7 +34,7 @@ class DispatchState(object):
             path = request.path_info[1:]
 
             path = path.split('/')
-        elif isinstance(path, basestring):
+        elif isinstance(path, string_type):
             path = path.split('/')
         try:
             if not path[0]:
