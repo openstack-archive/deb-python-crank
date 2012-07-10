@@ -1,6 +1,7 @@
 # encoding: utf-8
 from nose.tools import raises
 from crank.restdispatcher import RestDispatcher
+from crank.objectdispatcher import ObjectDispatcher
 from crank.dispatchstate import DispatchState
 from webob.exc import HTTPNotFound, HTTPMethodNotAllowed
 
@@ -84,6 +85,27 @@ class MockSimpleDispatcher(RestDispatcher):
 class MockMinimalRestDispatcher(RestDispatcher):
     def get_one(self):
         pass
+
+class MockError(Exception):pass
+class MockRestDispatcherWithSecurity(RestDispatcher):
+    def _check_security(self):
+        raise MockError
+
+    def get_one(self, *args):
+        pass
+
+class MockRestDispatcherWithNestedSecurity(RestDispatcher):
+    withsec = MockRestDispatcherWithSecurity()
+
+    def get_all(self, *args):
+        pass
+
+class MockDispatcherWithLookupOnSecurity(ObjectDispatcher):
+    def _lookup(self, *args):
+        if 'direct' in args:
+            return MockRestDispatcherWithSecurity(), args[1:]
+        if 'nested' in args:
+            return MockRestDispatcherWithNestedSecurity(), args[1:]
 
 class TestDispatcher:
 
@@ -393,3 +415,21 @@ class TestEmptyDispatcher:
         req = MockRequest('/sub', method='get')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
+
+class TestRestWithSecurity:
+    def setup(self):
+        self.dispatcher = MockDispatcherWithLookupOnSecurity()
+
+    @raises(MockError)
+    def test_check_security_with_lookup(self):
+        req = MockRequest('/direct/a')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        print state.method
+
+    @raises(MockError)
+    def test_check_security_with_nested_lookup(self):
+        req = MockRequest('/nested/withsec/a')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        print state.method

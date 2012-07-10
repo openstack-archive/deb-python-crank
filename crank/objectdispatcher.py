@@ -80,6 +80,14 @@ class ObjectDispatcher(Dispatcher):
     def __call__(self, state, remainder=None):
         return self._dispatch(state, remainder)
 
+    def _perform_security_check(self, controller):
+        #xxx do this better
+        obj = getattr(controller, 'im_self', controller)
+
+        security_check = getattr(obj, '_check_security', None)
+        if security_check:
+            security_check()
+
     def _dispatch_controller(self, current_path, controller, state, remainder):
         """
            Essentially, this method defines what to do when we move to the next
@@ -93,12 +101,7 @@ class ObjectDispatcher(Dispatcher):
         
         dispatcher = getattr(controller, '_dispatch', None)
         if dispatcher:
-            #xxx do this better
-            obj = getattr(controller, 'im_self', controller)
-
-            security_check = getattr(obj, '_check_security', None)
-            if security_check:
-                security_check()
+            self._perform_security_check(controller)
             state.add_controller(current_path, controller)
             state.dispatcher = controller
             return dispatcher(state, remainder)
@@ -192,9 +195,7 @@ class ObjectDispatcher(Dispatcher):
         onto the stack
         '''
         current_controller = state.controller
-        security_check = getattr(current_controller, '_check_security', None)
-        if security_check:
-            security_check()
+        self._perform_security_check(current_controller)
         if hasattr(current_controller, '_lookup') and self._is_exposed(current_controller, '_lookup'):
             state._notfound_stack.append(('lookup', current_controller._lookup, remainder, None))
         if hasattr(current_controller, '_default') and self._is_exposed(current_controller, '_default'):
