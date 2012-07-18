@@ -274,6 +274,12 @@ class TestDispatcherWithArgs:
         state = self.dispatcher._dispatch(state)
         assert state.method.__name__ == 'other'
 
+    def test_other_with_get_method(self):
+        req = MockRequest('/other/something', params={'_method':'get'}, method='get')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.method.__name__ == 'other', state.method
+
     @raises(HTTPNotFound)
     def test_post_bad(self):
         req = MockRequest('/aaa/aaa', method='post')
