@@ -72,6 +72,7 @@ class MockError(Exception):pass
 class MockDispatcherWithSecurity(ObjectDispatcher):
     def _check_security(self):
         raise MockError
+
     def _default(self, *args, **kw):
         pass
 
