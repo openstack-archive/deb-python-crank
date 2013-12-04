@@ -1,11 +1,11 @@
 Crank
 ==============
 
-.. image:: https://travis-ci.org/TurboGears/crank.png?branch=development
+.. image:: https://travis-ci.org/TurboGears/crank.png
     :target: https://travis-ci.org/TurboGears/crank
 
-.. image:: https://coveralls.io/repos/TurboGears/crank/badge.png?branch=development 
-    :target: https://coveralls.io/r/TurboGears/crank?branch=development
+.. image:: https://coveralls.io/repos/TurboGears/crank/badge.png
+    :target: https://coveralls.io/r/TurboGears/crank
 
 .. image:: https://pypip.in/v/crank/badge.png
    :target: https://pypi.python.org/pypi/crank
