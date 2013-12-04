@@ -17,6 +17,11 @@ setup(name='crank',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=True,
+      extras_require={
+           # Used by Travis and Coverage due to setup.py nosetests
+           # causing a coredump when used with coverage
+           'testing': ['webob'],
+      },
       install_requires=[
           # -*- Extra requirements: -*-
       ],
