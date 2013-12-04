@@ -5,14 +5,17 @@ Copyright (c) Chrispther Perkins
 MIT License
 """
 
-import collections, sys
+import collections, sys, string
+from inspect import getargspec
 
 __all__ = [
-        'get_argspec', 'get_params_with_argspec', 'remove_argspec_params_from_params', 'method_matches_args',
-        'Path'
+        'get_argspec', 'get_params_with_argspec', 'remove_argspec_params_from_params',
+        'method_matches_args', 'Path', 'default_path_translator'
     ]
 
-from inspect import getargspec
+
+_PY2 = bool(sys.version_info[0] == 2)
+
 
 _cached_argspecs = {}
 def get_argspec(func):
@@ -146,7 +149,27 @@ def method_matches_args(method, params, remainder, lax_params=False):
 
     return False
 
-_PY3 = bool(sys.version_info[0] == 3)
+
+if _PY2: #pragma: no cover
+    translation_dict = dict([(ord(c), unicode('_')) for c in unicode(string.punctuation)])
+    translation_string = string.maketrans(string.punctuation,
+                                          '_' * len(string.punctuation))
+else: #pragma: no cover
+    translation_dict = None
+    translation_string = str.maketrans(string.punctuation,
+                                       '_' * len(string.punctuation))
+
+
+def default_path_translator(path_piece):
+    if isinstance(path_piece, str):
+        return path_piece.translate(translation_string)
+    else: #pragma: no cover
+        return path_piece.translate(translation_dict)
+
+
+def noop_translation(path_piece):
+    return path_piece
+
 
 class Path(collections.deque):
     def __init__(self, value=None, separator='/'):
@@ -161,7 +184,7 @@ class Path(collections.deque):
         separator = self.separator
         self.clear()
 
-        if _PY3: # pragma: no cover
+        if not _PY2: # pragma: no cover
             string_types = str
         else: # pragma: no cover
             string_types = basestring

@@ -1,12 +1,13 @@
 """
 This module implements the :class:`DispatchState` class
 """
-from crank.util import Path
+from crank.util import default_path_translator, noop_translation
 
 try:
     string_type = basestring
 except NameError: # pragma: no cover
     string_type = str
+
 
 class DispatchState(object):
     """
@@ -26,39 +27,43 @@ class DispatchState(object):
               pre-split list of path elements, will use request.pathinfo if not used
     """
 
-    def __init__(self, request, dispatcher=None, params=None, path_info=None, ignore_parameters=None):
-        self.request = request
-
+    def __init__(self, request, dispatcher=None, params=None, path_info=None,
+                 ignore_parameters=None, strip_extension=True,
+                 path_translator=default_path_translator):
         path = path_info
         if path is None:
             path = request.path_info[1:]
-
             path = path.split('/')
         elif isinstance(path, string_type):
             path = path.split('/')
+
         try:
             if not path[0]:
                 path = path[1:]
         except IndexError:
             pass
+
         try:
             while not path[-1]:
                 path = path[:-1]
         except IndexError:
             pass
 
+        if path_translator is None:
+            path_translator = noop_translation
+
+        self.request = request
         self.extension = None
+        self.path_translator = path_translator
 
         #rob the extension
-        if len(path) > 0 and '.' in path[-1]:
+        if strip_extension and len(path) > 0 and '.' in path[-1]:
             end = path[-1]
-            end = end.split('.')
-            self.extension = end[-1]
-            path[-1] = '.'.join(end[:-1])
-                
+            end, ext = end.rsplit('.', 1)
+            self.extension = ext
+            path[-1] = end
 
         self.path = path
-            
 
         if params is not None:
             self.params = params

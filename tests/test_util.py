@@ -1,13 +1,11 @@
 # encoding: utf-8
-import sys
-from nose.tools import raises
 from crank.util import *
+from crank.util import _PY2
 
-_PY3 = bool(sys.version_info[0] == 3)
-if _PY3:
-    def u(s): return s
-else:
+if _PY2:
     def u(s): return s.decode('utf-8')
+else:
+    def u(s): return s
 
 def mock_f(self, a, b, c=None, d=50, *args, **kw):
     pass
@@ -185,10 +183,10 @@ def test_path_unicode():
         instance = MockOb()
         instance.path = case
 
-        if _PY3:
-            yield assert_path, instance, expected, str
-        else:
+        if _PY2:
             yield assert_path, instance, expected, unicode
+        else:
+            yield assert_path, instance, expected, str
 
 def test_path_slicing():
     class MockOb(object):
@@ -208,3 +206,10 @@ def test_path_comparison():
     assert Path('/foo') == ['', 'foo'], 'list comparison'
     assert Path('/foo') == '/foo', 'string comparison'
     assert Path(u('/föö')) == u('/föö'), 'string comparison'
+
+def test_path_translation():
+    translated = default_path_translator('a.b')
+    assert translated == 'a_b', translated
+
+    translated = default_path_translator(u('f.ö.ö'))
+    assert translated == u('f_ö_ö'), translated

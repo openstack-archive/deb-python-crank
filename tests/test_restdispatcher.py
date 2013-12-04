@@ -431,11 +431,9 @@ class TestRestWithSecurity:
         req = MockRequest('/direct/a')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
-        print state.method
 
     @raises(MockError)
     def test_check_security_with_nested_lookup(self):
         req = MockRequest('/nested/withsec/a')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
-        print state.method

@@ -20,7 +20,7 @@ class RestDispatcher(ObjectDispatcher):
             if self._is_exposed(controller, method):
                 return getattr(controller, method)
 
-    def _handle_put_or_post(self, method, state, remainder):
+    def _handle_put_or_post(self, http_method, state, remainder):
         current_controller = state.controller
         if remainder:
             current_path = remainder[0]
@@ -32,17 +32,15 @@ class RestDispatcher(ObjectDispatcher):
                 current_controller = getattr(current_controller, current_path)
                 return self._dispatch_controller(current_path, current_controller, state, remainder[1:])
 
-        method_name = method
-        method = self._find_first_exposed(current_controller, [method,])
+        method = self._find_first_exposed(current_controller, [http_method])
         if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
             state.add_method(method, remainder)
             return state
 
         return self._dispatch_first_found_default_or_lookup(state, remainder)
 
-    def _handle_delete(self, method, state, remainder):
+    def _handle_delete(self, http_method, state, remainder):
         current_controller = state.controller
-        method_name = method
         method = self._find_first_exposed(current_controller, ('post_delete', 'delete'))
 
         if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
@@ -72,27 +70,32 @@ class RestDispatcher(ObjectDispatcher):
             if hasattr(current_controller, find):
                 method = find
                 break
+
         if method is None:
             return
+
         fixed_args, var_args, kws, kw_args = get_argspec(getattr(current_controller, method))
         fixed_arg_length = len(fixed_args)
         if var_args:
             for i, item in enumerate(remainder):
+                item = state.path_translator(item)
                 if hasattr(current_controller, item) and self._is_controller(current_controller, item):
                     current_controller = getattr(current_controller, item)
                     state.add_routing_args(item, remainder[:i], fixed_args, var_args)
                     return self._dispatch_controller(item, current_controller, state, remainder[i+1:])
         elif fixed_arg_length< len(remainder) and hasattr(current_controller, remainder[fixed_arg_length]):
-            item = remainder[fixed_arg_length]
+            item = state.path_translator(remainder[fixed_arg_length])
             if hasattr(current_controller, item):
                 if self._is_controller(current_controller, item):
                     state.add_routing_args(item, remainder, fixed_args, var_args)
-                    return self._dispatch_controller(item, getattr(current_controller, item), state, remainder[fixed_arg_length+1:])
+                    return self._dispatch_controller(item, getattr(current_controller, item),
+                                                     state, remainder[fixed_arg_length+1:])
 
     def _handle_delete_edit_or_new(self, state, remainder):
         method_name = remainder[-1]
         if method_name not in ('new', 'edit', 'delete'):
             return
+
         if method_name == 'delete':
             method_name = 'get_delete'
 
@@ -157,15 +160,15 @@ class RestDispatcher(ObjectDispatcher):
 
         #test for "delete", "edit" or "new"
         r = self._handle_delete_edit_or_new(state, remainder)
-        if r:
+        if r is not None:
             return r
 
         #test for custom REST-like attribute
         r = self._handle_custom_get(state, remainder)
-        if r:
+        if r is not None:
             return r
 
-        current_path = remainder[0]
+        current_path = state.path_translator(remainder[0])
         if self._is_exposed(current_controller, current_path):
             state.add_method(getattr(current_controller, current_path), remainder[1:])
             return state
@@ -230,7 +233,7 @@ class RestDispatcher(ObjectDispatcher):
             state.http_method = method
 
         r = self._check_for_sub_controllers(state, remainder)
-        if r:
+        if r is not None:
             return r
 
         if state.http_method in self._handler_lookup.keys():

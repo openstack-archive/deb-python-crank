@@ -92,6 +92,8 @@ class MockDispatcherWithNoDefault(ObjectDispatcher):
     def index(self):
         pass
 
+    sub_child = MockDispatcher()
+
 mock_dispatcher_with_no_default = MockDispatcherWithNoDefault()
 
 class MockDispatcherWithIndexWithArgVars(ObjectDispatcher):
@@ -242,3 +244,54 @@ class TestDispatcher:
         req = MockRequest('/get_here', params={'a':1})
         state = DispatchState(req, mock_lookup_dispatcher_with_args)
         state = mock_lookup_dispatcher_with_args._dispatch(state)
+
+    def test_path_translation(self):
+        req = MockRequest('/no.args.json')
+        state = DispatchState(req, mock_dispatcher_with_no_default_or_index)
+        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        assert state.method.__name__ == 'no_args', state.method
+
+    def test_path_translation_no_extension(self):
+        req = MockRequest('/no.args')
+        state = DispatchState(req, mock_dispatcher_with_no_default_or_index,
+                              strip_extension=False)
+        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        assert state.method.__name__ == 'no_args', state.method
+
+    @raises(HTTPNotFound)
+    def test_disabled_path_translation_no_extension(self):
+        req = MockRequest('/no.args')
+        state = DispatchState(req, mock_dispatcher_with_no_default_or_index,
+                              strip_extension=False, path_translator=None)
+        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+
+    def test_path_translation_args_skipped(self):
+        req = MockRequest('/with.args/para.meter1/para.meter2.json')
+        state = DispatchState(req, mock_dispatcher_with_no_default_or_index)
+        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        assert state.method.__name__ == 'with_args', state.method
+        assert 'para.meter1' in state.remainder, state.remainder
+        assert 'para.meter2' in state.remainder, state.remainder
+
+    def test_path_translation_sub_controller(self):
+        req = MockRequest('/sub.child/with.args/para.meter1/para.meter2.json')
+        state = DispatchState(req, mock_dispatcher_with_no_default)
+        state = mock_dispatcher_with_no_default._dispatch(state)
+
+        path_pieces = [piece[0] for piece in state.controller_path]
+        assert 'sub_child' in path_pieces
+        assert state.method.__name__ == 'with_args', state.method
+        assert 'para.meter1' in state.remainder, state.remainder
+        assert 'para.meter2' in state.remainder, state.remainder
+
+    def test_path_translation_sub_controller_no_strip_extension(self):
+        req = MockRequest('/sub.child/with.args/para.meter1/para.meter2.json')
+        state = DispatchState(req, mock_dispatcher_with_no_default,
+                              strip_extension=False)
+        state = mock_dispatcher_with_no_default._dispatch(state)
+
+        path_pieces = [piece[0] for piece in state.controller_path]
+        assert 'sub_child' in path_pieces
+        assert state.method.__name__ == 'with_args', state.method
+        assert 'para.meter1' in state.remainder, state.remainder
+        assert 'para.meter2.json' in state.remainder, state.remainder

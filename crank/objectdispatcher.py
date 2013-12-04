@@ -85,7 +85,7 @@ class ObjectDispatcher(Dispatcher):
         obj = getattr(controller, 'im_self', controller)
 
         security_check = getattr(obj, '_check_security', None)
-        if security_check:
+        if security_check is not None:
             security_check()
 
     def _dispatch_controller(self, current_path, controller, state, remainder):
@@ -100,7 +100,7 @@ class ObjectDispatcher(Dispatcher):
         """
         
         dispatcher = getattr(controller, '_dispatch', None)
-        if dispatcher:
+        if dispatcher is not None:
             self._perform_security_check(controller)
             state.add_controller(current_path, controller)
             state.dispatcher = controller
@@ -170,7 +170,8 @@ class ObjectDispatcher(Dispatcher):
             #to see if there is a default or lookup method we can use
             return self._dispatch_first_found_default_or_lookup(state, remainder)
 
-        current_path = remainder[0]
+
+        current_path = state.path_translator(remainder[0])
         current_args = remainder[1:]
 
         #an exposed method matching the path is found
@@ -183,9 +184,9 @@ class ObjectDispatcher(Dispatcher):
 
         #another controller is found
         current_controller = getattr(current_controller, current_path, None)
-        if current_controller:
-            return self._dispatch_controller(
-                current_path, current_controller, state, current_args)
+        if current_controller is not None:
+            return self._dispatch_controller(current_path, current_controller,
+                                             state, current_args)
 
         #dispatch not found
         return self._dispatch_first_found_default_or_lookup(state, remainder)
