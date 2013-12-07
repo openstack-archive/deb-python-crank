@@ -25,11 +25,15 @@ class DispatchState(object):
               parameters to pass into the dispatch state will use request.params
         path_info
               pre-split list of path elements, will use request.pathinfo if not used
+        strip_extension
+              Whenever crank should strip the url extension or not resolving the path
+        path_translator
+              Function used to perform path escaping when looking for controller methods,
+              can be None to perform no escaping or True to use default escaping function.
     """
 
     def __init__(self, request, dispatcher=None, params=None, path_info=None,
-                 ignore_parameters=None, strip_extension=True,
-                 path_translator=default_path_translator):
+                 ignore_parameters=None, strip_extension=True, path_translator=True):
         path = path_info
         if path is None:
             path = request.path_info[1:]
@@ -51,6 +55,8 @@ class DispatchState(object):
 
         if path_translator is None:
             path_translator = noop_translation
+        elif path_translator is True:
+            path_translator = default_path_translator
 
         self.request = request
         self.extension = None
