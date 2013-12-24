@@ -33,7 +33,7 @@ class DispatchState(object):
     """
 
     def __init__(self, request, dispatcher=None, params=None, path_info=None,
-                 ignore_parameters=None, strip_extension=True, path_translator=True):
+                 ignore_parameters=None, strip_extension=True, path_translator=None):
         path = path_info
         if path is None:
             path = request.path_info[1:]

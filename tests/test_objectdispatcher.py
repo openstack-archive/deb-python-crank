@@ -247,14 +247,14 @@ class TestDispatcher:
 
     def test_path_translation(self):
         req = MockRequest('/no.args.json')
-        state = DispatchState(req, mock_dispatcher_with_no_default_or_index)
+        state = DispatchState(req, mock_dispatcher_with_no_default_or_index, path_translator=True)
         state = mock_dispatcher_with_no_default_or_index._dispatch(state)
         assert state.method.__name__ == 'no_args', state.method
 
     def test_path_translation_no_extension(self):
         req = MockRequest('/no.args')
         state = DispatchState(req, mock_dispatcher_with_no_default_or_index,
-                              strip_extension=False)
+                              strip_extension=False, path_translator=True)
         state = mock_dispatcher_with_no_default_or_index._dispatch(state)
         assert state.method.__name__ == 'no_args', state.method
 
@@ -267,7 +267,7 @@ class TestDispatcher:
 
     def test_path_translation_args_skipped(self):
         req = MockRequest('/with.args/para.meter1/para.meter2.json')
-        state = DispatchState(req, mock_dispatcher_with_no_default_or_index)
+        state = DispatchState(req, mock_dispatcher_with_no_default_or_index, path_translator=True)
         state = mock_dispatcher_with_no_default_or_index._dispatch(state)
         assert state.method.__name__ == 'with_args', state.method
         assert 'para.meter1' in state.remainder, state.remainder
@@ -275,7 +275,7 @@ class TestDispatcher:
 
     def test_path_translation_sub_controller(self):
         req = MockRequest('/sub.child/with.args/para.meter1/para.meter2.json')
-        state = DispatchState(req, mock_dispatcher_with_no_default)
+        state = DispatchState(req, mock_dispatcher_with_no_default, path_translator=True)
         state = mock_dispatcher_with_no_default._dispatch(state)
 
         path_pieces = [piece[0] for piece in state.controller_path]
@@ -287,7 +287,7 @@ class TestDispatcher:
     def test_path_translation_sub_controller_no_strip_extension(self):
         req = MockRequest('/sub.child/with.args/para.meter1/para.meter2.json')
         state = DispatchState(req, mock_dispatcher_with_no_default,
-                              strip_extension=False)
+                              strip_extension=False, path_translator=True)
         state = mock_dispatcher_with_no_default._dispatch(state)
 
         path_pieces = [piece[0] for piece in state.controller_path]
