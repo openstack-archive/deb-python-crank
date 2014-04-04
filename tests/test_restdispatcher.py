@@ -438,6 +438,45 @@ class TestRestWithSecurity:
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
 
+class TestRestWithLookup:
+    class RootController(ObjectDispatcher):
+        class rest(RestDispatcher):
+            class sub(ObjectDispatcher):
+                def method(self):
+                    pass
+            sub = sub()
+
+            def get(self, itemid):
+                return str(itemid)
+
+            def _lookup(self, *args, **kw):
+                return self.sub, args[1:]
+        rest = rest()
+
+    def setup(self):
+        self.dispatcher = self.RootController()
+
+    def test_rest_with_lookup(self):
+        req = MockRequest('/rest/somethingelse/method')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.controller.__class__.__name__ == 'sub', state.controller
+        assert state.method.__name__ == 'method', state.method
+
+    def test_rest_lookup_doesnt_mess_with_get(self):
+        req = MockRequest('/rest/25')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.controller.__class__.__name__ == 'rest', state.controller
+        assert state.method.__name__ == 'get', state.method
+
+    def test_rest_lookup_doesnt_mess_with_subcontroller(self):
+        req = MockRequest('/rest/sub/method')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.controller.__class__.__name__ == 'sub', state.controller
+        assert state.method.__name__ == 'method', state.method
+
 class TestRestCheckSecurity:
     class RootController(ObjectDispatcher):
         class rest(RestDispatcher):

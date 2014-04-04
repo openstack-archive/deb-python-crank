@@ -211,8 +211,7 @@ class RestDispatcher(ObjectDispatcher):
         if remainder is None:
             remainder = state.path
 
-        current_controller = state.controller
-        self._perform_security_check(current_controller)
+        self._enter_controller(state, remainder)
 
         #log.debug('Entering dispatch for remainder: %s in controller %s'%(remainder, self))
         if not hasattr(state, 'http_method'):
