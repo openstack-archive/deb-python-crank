@@ -437,3 +437,28 @@ class TestRestWithSecurity:
         req = MockRequest('/nested/withsec/a')
         state = DispatchState(req)
         state = self.dispatcher._dispatch(state)
+
+class TestRestCheckSecurity:
+    class RootController(ObjectDispatcher):
+        class rest(RestDispatcher):
+            def _check_security(self):
+                self.trace_security_visits.append(True)
+                return True
+
+            def get(self, itemid):
+                return str(itemid)
+
+        rest = rest()
+
+    def setup(self):
+        self.security_tracing = []
+        self.dispatcher = self.RootController()
+        self.dispatcher.rest.trace_security_visits = self.security_tracing
+
+    def test_rest_security_check_only_once(self):
+        req = MockRequest('/rest/25')
+        state = DispatchState(req)
+        state = self.dispatcher._dispatch(state)
+        assert state.controller.__class__.__name__ == 'rest', state.controller
+        assert state.method.__name__ == 'get', state.method
+        assert len(self.security_tracing) == 1, self.security_tracing

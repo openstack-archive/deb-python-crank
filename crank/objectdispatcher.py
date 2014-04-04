@@ -101,7 +101,6 @@ class ObjectDispatcher(Dispatcher):
         
         dispatcher = getattr(controller, '_dispatch', None)
         if dispatcher is not None:
-            self._perform_security_check(controller)
             state.add_controller(current_path, controller)
             state.dispatcher = controller
             return dispatcher(state, remainder)
