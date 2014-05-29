@@ -22,4 +22,12 @@ Crank is licensed under an MIT-style license (see LICENSE.txt).
 Other incorporated projects may be licensed under different licenses.
 All licenses allow for non-commercial and commercial use.
 
+ChangeLog
+--------------
 
+0.7.1
+~~~~~~~~~~~~~
+
+- Fix issue that in some cased caused ``_lookup`` to not be called for ``RestDispatcher``
+- Speedup permission checks, in some conditions they were performed twice
+- Python 3.4 is now officially supported
