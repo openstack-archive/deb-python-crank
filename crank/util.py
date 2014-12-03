@@ -17,6 +17,10 @@ __all__ = [
 _PY2 = bool(sys.version_info[0] == 2)
 
 
+class _NotFound(object):
+    pass
+
+
 _cached_argspecs = {}
 def get_argspec(func):
     try:
@@ -77,12 +81,12 @@ def remove_argspec_params_from_params(func, params, remainder):
     remainder = list(remainder)
     remainder_len = len(remainder)
     for i, var in enumerate(required_vars):
-        val = params.get(var, None)
-        if i < remainder_len and val:
-            remainder[i] = val
-        elif val:
-            remainder.append(val)
-        if val:
+        val = params.get(var, _NotFound)
+        if val is not _NotFound:
+            if i < remainder_len:
+                remainder[i] = val
+            else:
+                remainder.append(val)
             del params[var]
 
     # remove the optional positional variables (remainder) from the named parameters

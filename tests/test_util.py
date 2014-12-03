@@ -37,6 +37,12 @@ def test_remove_argspec_params_from_params_none_remainder():
     assert params == {'a': 1, 'b': 2}, params
     assert remainder == None, repr(remainder)
 
+def test_remove_argspec_params_from_params_none_param():
+    params, remainder = remove_argspec_params_from_params(mock_f, {'b':None}, [3, 3])
+    assert params == {}, params
+    assert remainder == (3, None), repr(remainder)
+
+
 def mock_f2(self, a, b):
     pass
 
