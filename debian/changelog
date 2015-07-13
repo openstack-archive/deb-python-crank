@@ -1,0 +1,5 @@
+python-crank (0.7.2-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #XXXXXX)
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 13 Jul 2015 10:40:09 +0200
