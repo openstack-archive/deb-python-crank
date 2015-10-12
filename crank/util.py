@@ -5,8 +5,7 @@ Copyright (c) Chrispther Perkins
 MIT License
 """
 
-import collections, sys, string
-from inspect import getargspec
+import collections, sys, string, inspect
 
 __all__ = [
         'get_argspec', 'get_params_with_argspec', 'remove_argspec_params_from_params',
@@ -21,17 +20,43 @@ class _NotFound(object):
     pass
 
 
+def _getargspec(func):
+    if not hasattr(inspect, 'signature'):
+        return inspect.getargspec(func)
+
+    sig = inspect.signature(func)
+    args = [
+        p.name for p in sig.parameters.values()
+        if p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
+    ]
+    varargs = [
+        p.name for p in sig.parameters.values()
+        if p.kind == inspect.Parameter.VAR_POSITIONAL
+    ]
+    varargs = varargs[0] if varargs else None
+    varkw = [
+        p.name for p in sig.parameters.values()
+        if p.kind == inspect.Parameter.VAR_KEYWORD
+    ]
+    varkw = varkw[0] if varkw else None
+    defaults = tuple((
+        p.default for p in sig.parameters.values()
+        if p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and p.default is not p.empty
+    )) or None
+    return args, varargs, varkw, defaults
+
+
 _cached_argspecs = {}
 def get_argspec(func):
-    try:
-        im_func = func.im_func
-    except AttributeError:
-        im_func = func
+    if _PY2:
+        im_func = getattr(func, 'im_func', func)
+    else:
+        im_func = getattr(func, '__func__', func)
 
     try:
         argspec = _cached_argspecs[im_func]
     except KeyError:
-        spec = getargspec(im_func)
+        spec = _getargspec(im_func)
         argvals = spec[3]
 
         # this is a work around for a crappy api choice in getargspec
