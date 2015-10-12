@@ -25,6 +25,11 @@ All licenses allow for non-commercial and commercial use.
 ChangeLog
 --------------
 
+0.7.3
+~~~~~~~~~~~~~
+
+- Add initial support for Python 3.5
+
 0.7.1
 ~~~~~~~~~~~~~
 
