@@ -30,6 +30,11 @@ ChangeLog
 
 - Add initial support for Python 3.5
 
+0.7.2
+~~~~~~~~~~~~~
+
+- Fix issue with parameters with ``None`` value when preparing positional arguments for dispatch.
+
 0.7.1
 ~~~~~~~~~~~~~
 
