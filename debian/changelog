@@ -1,6 +1,7 @@
 python-crank (0.7.2-2) unstable; urgency=medium
 
   * Fixed FTBFS by adding python-webob as build-depends (Closes: #802128).
+  * Fixed watch file to use Github tag rather than broken PyPi.
 
  -- Thomas Goirand <zigo@debian.org>  Sun, 18 Oct 2015 14:01:10 +0000
 
