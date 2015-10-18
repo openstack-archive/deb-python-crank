@@ -2,13 +2,17 @@ Source: python-crank
 Section: python
 Priority: optional
 Maintainer: PKG OpenStack <openstack-devel@lists.alioth.debian.org>
-Uploaders: Thomas Goirand <zigo@debian.org>
+Uploaders: Thomas Goirand <zigo@debian.org>,
 Build-Depends: debhelper (>= 9),
                dh-python,
-               python-setuptools,
                python-all,
+               python-setuptools,
+               python3-all,
                python3-setuptools,
-               python3-all
+Build-Depends-Indep: python-nose,
+                     python-webob,
+                     python3-nose,
+                     python3-webob,
 Standards-Version: 3.9.6
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-crank.git
 Vcs-Git: git://anonscm.debian.org/openstack/python-crank.git
@@ -16,7 +20,8 @@ Homepage: https://github.com/TurboGears/crank
 
 Package: python-crank
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}
+Depends: ${misc:Depends},
+         ${python:Depends},
 Description: dispatch mechanism for use across frameworks - Python 2.7
  Generalized Object based Dispatch mechanism for use across frameworks.
  .
@@ -24,7 +29,8 @@ Description: dispatch mechanism for use across frameworks - Python 2.7
 
 Package: python3-crank
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}
+Depends: ${misc:Depends},
+         ${python3:Depends},
 Description: dispatch mechanism for use across frameworks - Python 3.x
  Generalized Object based Dispatch mechanism for use across frameworks.
  .
