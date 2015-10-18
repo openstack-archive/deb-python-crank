@@ -22,8 +22,9 @@ override_dh_auto_install:
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
-	set -e ; for pyvers in $(PYTHONS) $(PYTHON3S); do \
-		python$$pyvers setup.py test ; \
+	nosetests -v
+	set -e ; for pyvers in $(PYTHON3S); do \
+		PYTHON=python$$pyvers nosetests3 -v ; \
 	done
 endif
 
