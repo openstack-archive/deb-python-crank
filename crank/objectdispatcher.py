@@ -118,7 +118,7 @@ class ObjectDispatcher(Dispatcher):
                 method = getattr(current_controller, 'index', None)
                 if method:
                     if method_matches_args(method, state.params, remainder, self._use_lax_params):
-                        state.add_method(current_controller.index, remainder)
+                        state.set_action(current_controller.index, remainder)
                         return state
             raise HTTPNotFound
         else:
@@ -132,7 +132,7 @@ class ObjectDispatcher(Dispatcher):
                 r = dispatcher(state, new_remainder)
                 return r
             elif m_type == 'default':
-                state.add_method(meth, m_remainder)
+                state.set_action(meth, m_remainder)
                 return state
 #        raise HTTPNotFound
 
@@ -153,7 +153,7 @@ class ObjectDispatcher(Dispatcher):
         if not remainder:
             if self._is_exposed(current_controller, 'index') and \
                method_matches_args(current_controller.index, state.params, remainder, self._use_lax_params):
-                state.add_method(current_controller.index, remainder)
+                state.set_action(current_controller.index, remainder)
                 return state
             #if there is no index, head up the tree
             #to see if there is a default or lookup method we can use
@@ -168,7 +168,7 @@ class ObjectDispatcher(Dispatcher):
             #check to see if the argspec jives
             controller = getattr(current_controller, current_path)
             if method_matches_args(controller, state.params, current_args, self._use_lax_params):
-                state.add_method(controller, current_args)
+                state.set_action(controller, current_args)
                 return state
 
         #another controller is found

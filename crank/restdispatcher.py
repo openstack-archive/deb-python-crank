@@ -26,7 +26,7 @@ class RestDispatcher(ObjectDispatcher):
         if remainder:
             current_path = remainder[0]
             if self._is_exposed(current_controller, current_path):
-                state.add_method(getattr(current_controller, current_path), remainder[1:])
+                state.set_action(getattr(current_controller, current_path), remainder[1:])
                 return state
 
             if self._is_controller(current_controller, current_path):
@@ -35,7 +35,7 @@ class RestDispatcher(ObjectDispatcher):
 
         method = self._find_first_exposed(current_controller, [http_method])
         if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
-            state.add_method(method, remainder)
+            state.set_action(method, remainder)
             return state
 
         return self._dispatch_first_found_default_or_lookup(state, remainder)
@@ -45,7 +45,7 @@ class RestDispatcher(ObjectDispatcher):
         method = self._find_first_exposed(current_controller, ('post_delete', 'delete'))
 
         if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
-            state.add_method(method, remainder)
+            state.set_action(method, remainder)
             return state
 
         #you may not send a delete request to a non-delete function
@@ -104,7 +104,7 @@ class RestDispatcher(ObjectDispatcher):
             method = getattr(current_controller, method_name)
             new_remainder = remainder[:-1]
             if method and method_matches_args(method, state.params, new_remainder, self._use_lax_params):
-                state.add_method(method, new_remainder)
+                state.set_action(method, new_remainder)
                 return state
 
     def _handle_custom_get(self, state, remainder):
@@ -117,7 +117,7 @@ class RestDispatcher(ObjectDispatcher):
         if get_method:
             new_remainder = remainder[:-1]
             if method_matches_args(get_method, state.params, new_remainder, self._use_lax_params):
-                state.add_method(get_method, new_remainder)
+                state.set_action(get_method, new_remainder)
                 return state
 
     def _handle_custom_method(self, method, state, remainder):
@@ -127,7 +127,7 @@ class RestDispatcher(ObjectDispatcher):
         method = self._find_first_exposed(current_controller, ('%s_%s' %(http_method, method_name), method_name, 'post_%s' %method_name))
 
         if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
-            state.add_method(method, remainder)
+            state.set_action(method, remainder)
             return state
 
         # there might be a sub-controller with a custom method, let's go see
@@ -146,12 +146,12 @@ class RestDispatcher(ObjectDispatcher):
         if not remainder:
             method = self._find_first_exposed(current_controller, ('get_all', 'get'))
             if method:
-                state.add_method(method, remainder)
+                state.set_action(method, remainder)
                 return state
             if self._is_exposed(current_controller, 'get_one'):
                 method = current_controller.get_one
                 if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
-                    state.add_method(method, remainder)
+                    state.set_action(method, remainder)
                     return state
             return self._dispatch_first_found_default_or_lookup(state, remainder)
 
@@ -167,7 +167,7 @@ class RestDispatcher(ObjectDispatcher):
 
         current_path = state.translate_path_piece(remainder[0])
         if self._is_exposed(current_controller, current_path):
-            state.add_method(getattr(current_controller, current_path), remainder[1:])
+            state.set_action(getattr(current_controller, current_path), remainder[1:])
             return state
 
         if self._is_controller(current_controller, current_path):
@@ -176,7 +176,7 @@ class RestDispatcher(ObjectDispatcher):
 
         method = self._find_first_exposed(current_controller, ('get_one', 'get'))
         if method and method_matches_args(method, state.params, remainder, self._use_lax_params):
-            state.add_method(method, remainder)
+            state.set_action(method, remainder)
             return state
 
         return self._dispatch_first_found_default_or_lookup(state, remainder)
