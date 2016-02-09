@@ -174,20 +174,20 @@ class TestDispatcher:
     def test_controller_method_with_args_missing_args_404_default_or_index(self):
         req = MockRequest('/with_args/a')
         state = DispatchState(req, mock_dispatcher_with_no_default_or_index)
-        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     @raises(HTTPNotFound)
     def test_controller_method_with_args_missing_args_404_no_default(self):
         req = MockRequest('/with_args/a')
         state = DispatchState(req, mock_dispatcher_with_no_default)
-        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     def test_controller_method_with_args_missing_args_index(self):
         req = MockRequest('/with_args/a')
         state = DispatchState(req, mock_dispatcher_with_index_with_argvars)
-        state = mock_dispatcher_with_index_with_argvars._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == 'index', state.method
 
     @raises(HTTPNotFound)
@@ -197,7 +197,7 @@ class TestDispatcher:
         
         try:
             mock_dispatcher_with_index_with_argvars._use_index_fallback = False
-            state = mock_dispatcher_with_index_with_argvars._dispatch(state)
+            state = state.resolve()
         finally:
             mock_dispatcher_with_index_with_argvars._use_index_fallback = True
 
@@ -205,7 +205,7 @@ class TestDispatcher:
     def test_check_security(self):
         req = MockRequest('/with_args/a')
         state = DispatchState(req, mock_dispatcher_with_check_security)
-        state = mock_dispatcher_with_check_security._dispatch(state)
+        state = state.resolve()
 
     def test_sub_dispatcher(self):
         req = MockRequest('/sub')
@@ -235,7 +235,7 @@ class TestDispatcher:
     def test_lookup_dispatch(self):
         req = MockRequest('/get_here')
         state = DispatchState(req, mock_lookup_dispatcher_with_args)
-        state = mock_lookup_dispatcher_with_args._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == 'get_here', state.method
         assert state.controller.__class__.__name__ == 'MockLookupHelperWithArgs', state.controller
 
@@ -243,19 +243,19 @@ class TestDispatcher:
     def test_lookup_dispatch_bad_params(self):
         req = MockRequest('/get_here', params={'a':1})
         state = DispatchState(req, mock_lookup_dispatcher_with_args)
-        state = mock_lookup_dispatcher_with_args._dispatch(state)
+        state = state.resolve()
 
     def test_path_translation(self):
         req = MockRequest('/no.args.json')
         state = DispatchState(req, mock_dispatcher_with_no_default_or_index, path_translator=True)
-        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == 'no_args', state.method
 
     def test_path_translation_no_extension(self):
         req = MockRequest('/no.args')
         state = DispatchState(req, mock_dispatcher_with_no_default_or_index,
                               strip_extension=False, path_translator=True)
-        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == 'no_args', state.method
 
     @raises(HTTPNotFound)
@@ -263,12 +263,12 @@ class TestDispatcher:
         req = MockRequest('/no.args')
         state = DispatchState(req, mock_dispatcher_with_no_default_or_index,
                               strip_extension=False, path_translator=None)
-        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        state = state.resolve()
 
     def test_path_translation_args_skipped(self):
         req = MockRequest('/with.args/para.meter1/para.meter2.json')
         state = DispatchState(req, mock_dispatcher_with_no_default_or_index, path_translator=True)
-        state = mock_dispatcher_with_no_default_or_index._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == 'with_args', state.method
         assert 'para.meter1' in state.remainder, state.remainder
         assert 'para.meter2' in state.remainder, state.remainder
@@ -276,7 +276,7 @@ class TestDispatcher:
     def test_path_translation_sub_controller(self):
         req = MockRequest('/sub.child/with.args/para.meter1/para.meter2.json')
         state = DispatchState(req, mock_dispatcher_with_no_default, path_translator=True)
-        state = mock_dispatcher_with_no_default._dispatch(state)
+        state = state.resolve()
 
         path_pieces = [piece[0] for piece in state.controller_path]
         assert 'sub_child' in path_pieces
@@ -288,7 +288,7 @@ class TestDispatcher:
         req = MockRequest('/sub.child/with.args/para.meter1/para.meter2.json')
         state = DispatchState(req, mock_dispatcher_with_no_default,
                               strip_extension=False, path_translator=True)
-        state = mock_dispatcher_with_no_default._dispatch(state)
+        state = state.resolve()
 
         path_pieces = [piece[0] for piece in state.controller_path]
         assert 'sub_child' in path_pieces
