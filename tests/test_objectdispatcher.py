@@ -118,56 +118,56 @@ class TestDispatcher:
     
     def test_call(self):
         req = MockRequest('/')
-        state = DispatchState(req)
-        state = self.dispatcher(state, [])
+        state = DispatchState(req, self.dispatcher)
+        state = state.resolve()
         assert state.method.__name__ == 'index', state.method
 
     def test_dispatch_index(self):
         req = MockRequest('/')
-        state = DispatchState(req)
+        state = DispatchState(req, self.dispatcher) 
         state = self.dispatcher._dispatch(state, [])
         assert state.method.__name__ == 'index', state.method
 
     def test_dispatch_default(self):
         req = MockRequest('/', params={'a':1})
         state = DispatchState(req, self.dispatcher)
-        state = self.dispatcher._dispatch(state)
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     def test_dispatch_default_with_unicode(self):
         req = MockRequest('/', params={u('å'):u('ß')})
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     def test_controller_method_dispatch_no_args(self):
         req = MockRequest('/no_args')
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == 'no_args', state.method
 
     def test_controller_method_with_unicode_args(self):
         req = MockRequest(u('/with_args/å/ß'))
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == 'with_args', state.method
 
     def test_controller_method_with_empty_args(self):
         req = MockRequest('/with_args//a/b')
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     def test_controller_method_with_args(self):
         req = MockRequest('/with_args/a/b')
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == 'with_args', state.method
 
     def test_controller_method_with_args_missing_args_default(self):
         req = MockRequest('/with_args/a')
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     @raises(HTTPNotFound)
@@ -209,27 +209,27 @@ class TestDispatcher:
 
     def test_sub_dispatcher(self):
         req = MockRequest('/sub')
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == 'index', state.method
         assert state.controller.__class__.__name__ == 'MockSubDispatcher', state.controller
 
     def test_sub_dispatcher_bad_remainder_call_parent_default(self):
         req = MockRequest('/sub/a')
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     def test_sub_dispatcher_bad_params_call_parent_default(self):
         req = MockRequest('/sub', params={'a':1})
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == '_default', state.method
 
     def test_sub_dispatcher_override_dispatch(self):
         req = MockRequest('/override_dispatch', params={'a':1})
-        state = DispatchState(req)
-        state = self.dispatcher._dispatch(state)
+        state = DispatchState(req, self.dispatcher) 
+        state = state.resolve()
         assert state.method.__name__ == 'wacky', state.method
 
     def test_lookup_dispatch(self):

@@ -34,7 +34,7 @@ class DispatchState(object):
               can be None to perform no escaping or True to use default escaping function.
     """
 
-    def __init__(self, request, dispatcher=None, params=None, path_info=None,
+    def __init__(self, request, dispatcher, params=None, path_info=None,
                  ignore_parameters=None, strip_extension=True, path_translator=None):
         self._request = request
 

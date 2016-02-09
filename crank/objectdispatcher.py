@@ -78,9 +78,6 @@ class ObjectDispatcher(Dispatcher):
         """
         return ismethod(getattr(controller, name, False))
 
-    def __call__(self, state, remainder=None):
-        return self._dispatch(state, remainder)
-
     def _perform_security_check(self, controller):
         #xxx do this better
         obj = getattr(controller, 'im_self', controller)
@@ -144,12 +141,9 @@ class ObjectDispatcher(Dispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-        if state.root_dispatcher is None:
-            state._root_dispatcher = self
-            state.add_controller('/', self)
         if remainder is None:
             remainder = state.path
-            
+
         current_controller = state.controller
 
         #skip any empty urls

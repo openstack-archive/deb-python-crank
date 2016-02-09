@@ -202,9 +202,6 @@ class RestDispatcher(ObjectDispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-        if state.root_dispatcher is None:
-            state._root_dispatcher = self
-            state.add_controller('/', self)
         if remainder is None:
             remainder = state.path
 
