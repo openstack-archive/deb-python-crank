@@ -202,9 +202,6 @@ class RestDispatcher(ObjectDispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-        if remainder is None:
-            remainder = state.path
-
         self._enter_controller(state, remainder)
 
         #log.debug('Entering dispatch for remainder: %s in controller %s'%(remainder, self))

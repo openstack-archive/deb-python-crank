@@ -141,9 +141,6 @@ class ObjectDispatcher(Dispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-        if remainder is None:
-            remainder = state.path
-
         current_controller = state.controller
 
         #skip any empty urls

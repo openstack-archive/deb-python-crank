@@ -175,7 +175,7 @@ class DispatchState(object):
         """
         if self._action is not None:
             raise RuntimeError('Trying to resolve an already resolved DispatchState')
-        return self._root_dispatcher._dispatch(self)
+        return self._root_dispatcher._dispatch(self, self._path)
 
     def translate_path_piece(self, path_piece):
         return self._path_translator(path_piece=path_piece)
