@@ -99,11 +99,10 @@ class ObjectDispatcher(Dispatcher):
            Also, this is the place where the controller is checked for
            controller-level security.
         """
-        
+
         dispatcher = getattr(controller, '_dispatch', None)
         if dispatcher is not None:
             state.add_controller(current_path, controller)
-            state.dispatcher = controller
             return dispatcher(state, remainder)
         state.add_controller(current_path, controller)
         return self._dispatch(state, remainder)
@@ -137,7 +136,6 @@ class ObjectDispatcher(Dispatcher):
                 return r
             elif m_type == 'default':
                 state.add_method(meth, m_remainder)
-                state.dispatcher = self
                 return state
 #        raise HTTPNotFound
 
