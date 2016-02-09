@@ -144,8 +144,8 @@ class ObjectDispatcher(Dispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-        if state.dispatcher is None:
-            state.dispatcher = self
+        if state.root_dispatcher is None:
+            state._root_dispatcher = self
             state.add_controller('/', self)
         if remainder is None:
             remainder = state.path
@@ -169,7 +169,7 @@ class ObjectDispatcher(Dispatcher):
             return self._dispatch_first_found_default_or_lookup(state, remainder)
 
 
-        current_path = state.path_translator(remainder[0])
+        current_path = state.translate_path_piece(remainder[0])
         current_args = remainder[1:]
 
         #an exposed method matching the path is found

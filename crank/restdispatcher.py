@@ -77,13 +77,13 @@ class RestDispatcher(ObjectDispatcher):
         fixed_arg_length = len(fixed_args)
         if var_args:
             for i, item in enumerate(remainder):
-                item = state.path_translator(item)
+                item = state.translate_path_piece(item)
                 if hasattr(current_controller, item) and self._is_controller(current_controller, item):
                     current_controller = getattr(current_controller, item)
                     state.add_routing_args(item, remainder[:i], fixed_args, var_args)
                     return self._dispatch_controller(item, current_controller, state, remainder[i+1:])
         elif fixed_arg_length< len(remainder) and hasattr(current_controller, remainder[fixed_arg_length]):
-            item = state.path_translator(remainder[fixed_arg_length])
+            item = state.translate_path_piece(remainder[fixed_arg_length])
             if hasattr(current_controller, item):
                 if self._is_controller(current_controller, item):
                     state.add_routing_args(item, remainder, fixed_args, var_args)
@@ -165,7 +165,7 @@ class RestDispatcher(ObjectDispatcher):
         if r is not None:
             return r
 
-        current_path = state.path_translator(remainder[0])
+        current_path = state.translate_path_piece(remainder[0])
         if self._is_exposed(current_controller, current_path):
             state.add_method(getattr(current_controller, current_path), remainder[1:])
             return state
@@ -202,8 +202,8 @@ class RestDispatcher(ObjectDispatcher):
         This method defines how the object dispatch mechanism works, including
         checking for security along the way.
         """
-        if state.dispatcher is None:
-            state.dispatcher = self
+        if state.root_dispatcher is None:
+            state._root_dispatcher = self
             state.add_controller('/', self)
         if remainder is None:
             remainder = state.path
