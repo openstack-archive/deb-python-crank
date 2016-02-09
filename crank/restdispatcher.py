@@ -210,7 +210,7 @@ class RestDispatcher(ObjectDispatcher):
             params = state.params
 
             #conventional hack for handling methods which are not supported by most browsers
-            request_method = params.get('_method', None)
+            request_method = params.pop('_method', None)
             if request_method:
                 request_method = request_method.lower()
                 #make certain that DELETE and PUT requests are not sent with GET
@@ -219,7 +219,6 @@ class RestDispatcher(ObjectDispatcher):
                 if method == 'get' and request_method == 'delete':
                     raise HTTPMethodNotAllowed
                 method = request_method
-                del state.params['_method']
             state.http_method = method
 
         r = self._check_for_sub_controllers(state, remainder)
