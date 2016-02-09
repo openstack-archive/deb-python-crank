@@ -56,8 +56,6 @@ class RestDispatcher(ObjectDispatcher):
             sub_controller = getattr(current_controller, remainder[0], None)
             if sub_controller:
                 remainder = remainder[1:]
-                state.current_controller = sub_controller
-                state.path = remainder
                 r = self._dispatch_controller(remainder[0], sub_controller, state, remainder)
                 if r:
                     return r
@@ -137,8 +135,6 @@ class RestDispatcher(ObjectDispatcher):
             if sub_controller:
                 current = remainder[0]
                 remainder = remainder[1:]
-                state.current_controller = sub_controller
-                state.path = remainder
                 r = self._dispatch_controller(current, sub_controller, state, remainder)
                 if r:
                     return r
