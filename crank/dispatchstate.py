@@ -197,6 +197,13 @@ class DispatchState(object):
 
     @property
     def routing_args(self):
+        """Parameters detected by the routing system.
+
+        This includes Request parameters and parameters extracted in other
+        ways (usually added through :meth:`.add_routing_args`). In case
+        of REST it will include intermediate arguments retrieved during dispatch
+        of parent controllers.
+        """
         return self._routing_args
 
     def add_method(self, method, remainder):
