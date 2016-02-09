@@ -21,6 +21,7 @@ from crank.dispatcher import Dispatcher
 from webob.exc import HTTPNotFound
 from inspect import ismethod
 
+
 class ObjectDispatcher(Dispatcher):
     """
     Object dispatch (also "object publishing") means that each portion of the

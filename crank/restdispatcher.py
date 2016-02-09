@@ -9,6 +9,7 @@ from webob.exc import HTTPMethodNotAllowed
 from crank.util import get_argspec, method_matches_args
 from crank.objectdispatcher import ObjectDispatcher
 
+
 class RestDispatcher(ObjectDispatcher):
     """Defines a restful interface for a set of HTTP verbs.
     Please see RestController for a rundown of the controller
