@@ -122,6 +122,18 @@ class TestDispatcher:
         state = state.resolve()
         assert state.method.__name__ == 'index', state.method
 
+    def test_call_twice(self):
+        req = MockRequest('/')
+        state = DispatchState(req, self.dispatcher)
+        state = state.resolve()
+
+        try:
+            state = state.resolve()
+        except RuntimeError:
+            assert state.method.__name__ == 'index', state.method
+        else:
+            assert False, 'Should have raised RuntimeError'
+
     def test_dispatch_index(self):
         req = MockRequest('/')
         state = DispatchState(req, self.dispatcher) 
