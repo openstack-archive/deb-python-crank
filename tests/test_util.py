@@ -10,6 +10,13 @@ else:
 def mock_f(self, a, b, c=None, d=50, *args, **kw):
     pass
 
+def mock_f2(self, a, b):
+    pass
+
+class mock_c(object):
+    def mock_f(self, a, b):
+        pass
+
 def test_get_argspec_first_call():
     argspec = get_argspec(mock_f)
     assert argspec == (['a', 'b', 'c', 'd'], 'args', 'kw', (None, 50)), argspec
@@ -21,6 +28,99 @@ def test_get_argspec_cached():
 def test_get_params_with_argspec():
     params = get_params_with_argspec(mock_f, {'a':1, 'c':2}, [3])
     assert params == {'a': 3, 'c': 2}, params
+
+def test_get_params_with_argspec_class():
+    params = get_params_with_argspec(mock_c().mock_f, {'a':1, 'c':2}, [3])
+    assert params == {'a': 3, 'c': 2}, params
+
+
+class TestFlattenArguments(object):
+    def test_flatten_arguments(self):
+        remainder, params = flatten_arguments(mock_f, {'a':1, 'b':2}, [3])
+        assert params == {}, params
+        assert remainder == (1, 2, None, 50), repr(remainder)
+
+    def test_flatten_arguments_optional_positionals(self):
+        remainder, params = flatten_arguments(mock_f, {'c':45}, [3, 3, 4])
+        assert params == {}, params
+        assert remainder == (3, 3, 45, 50), repr(remainder)
+
+    def test_flatten_arguments_keep_extra_keyword(self):
+        remainder, params = flatten_arguments(mock_f, {'c': 45, 'z': 45}, [3, 3, 4])
+        assert params == {'z': 45}, params
+        assert remainder == (3, 3, 45, 50), repr(remainder)
+
+    def test_flatten_arguments_keep_extra_positional(self):
+        remainder, params = flatten_arguments(mock_f, {'c': 45, 'z': 45}, [3, 3, 4, 50, 72])
+        assert params == {'z': 45}, params
+        assert remainder == (3, 3, 45, 50, 72), repr(remainder)
+
+    def test_flatten_arguments_none_remainder(self):
+        remainder, params = flatten_arguments(mock_f, {'a':1, 'b':2}, None)
+        assert params == {}, params
+        assert remainder == (1, 2, None, 50), repr(remainder)
+
+    def test_flatten_arguments_none_param(self):
+        remainder, params = flatten_arguments(mock_f, {'b': None}, [3, 3])
+        assert params == {}, params
+        assert remainder == (3, None, None, 50), repr(remainder)
+
+    def test_flatten_arguments_in_remainder(self):
+        remainder, params = flatten_arguments(mock_f2, {'b':1}, ['a'])
+        assert params == {}, params
+        assert remainder == ('a', 1,), repr(remainder)
+
+    def test_flatten_arguments_no_conditionals(self):
+        remainder, params = flatten_arguments(mock_f2, {'a':1, 'b':2}, ['a'])
+        assert params == {}, params
+        assert remainder == (1,2), repr(remainder)
+
+    def test_flatten_arguments_req_var_in_params(self):
+        remainder, params = flatten_arguments(mock_f2, {'a':1, 'b':2}, ['a'])
+        assert params == {}, params
+        assert remainder == (1, 2), repr(remainder)
+
+    def test_flatten_arguments_avoid_creating_duplicate_parameters(self):
+        remainder, params = flatten_arguments(mock_f, {'a':1, 'b':2, 'c':3}, ['a', 'b'])
+        assert params == {}, params
+        assert remainder == (1, 2, 3, 50), repr(remainder)
+
+    def test_flatten_arguments_avoid_duplicate_params(self):
+        remainder, params = flatten_arguments(mock_f2, {'a':1, 'b':2}, ['a', 'b'])
+        assert params == {}, params
+        assert remainder == (1, 2), remainder
+
+    def test_flatten_arguments_all_positional_with_unexpected_arg(self):
+        remainder, params = flatten_arguments(mock_f2, {}, ['a', 'b', 'c'])
+        assert params == {}, params
+        assert remainder == ('a', 'b'), remainder
+
+    def test_flatten_arguments_all_positional(self):
+        remainder, params = flatten_arguments(mock_f2, {}, ['a', 'b'])
+        assert params == {}, params
+        assert remainder == ('a', 'b'), remainder
+
+    def test_flatten_arguments_all_positional_unexpected_but_varargs(self):
+        remainder, params = flatten_arguments(mock_f, {}, ['a', 'b', 'c', 'd', 'e'])
+        assert params == {}, params
+        assert remainder == ('a', 'b', 'c', 'd', 'e'), remainder
+
+    def test_flatten_arguments_missing_first_argument(self):
+        try:
+            remainder, params = flatten_arguments(mock_f2, {'b': 2}, [])
+        except TypeError as e:
+            assert 'missing "a" required argument' in str(e)
+        else:
+            assert False, 'should have triggered missed argument'
+
+    def test_flatten_arguments_missing_last_argument(self):
+        try:
+            remainder, params = flatten_arguments(mock_f2, {'a': 1}, [])
+        except TypeError as e:
+            assert 'missing "b" required argument' in str(e)
+        else:
+            assert False, 'should have triggered missed argument'
+
 
 def test_remove_argspec_params_from_params():
     params, remainder = remove_argspec_params_from_params(mock_f, {'a':1, 'b':2}, [3])
@@ -42,15 +142,10 @@ def test_remove_argspec_params_from_params_none_param():
     assert params == {}, params
     assert remainder == (3, None), repr(remainder)
 
-
-def mock_f2(self, a, b):
-    pass
-
 def test_remove_argspec_params_from_params_in_remainder():
     params, remainder = remove_argspec_params_from_params(mock_f2, {'b':1}, ['a'])
     assert params == {}, params
     assert remainder == ('a', 1,), repr(remainder)
-
 
 def test_remove_argspec_params_from_params_no_conditionals():
     params, remainder = remove_argspec_params_from_params(mock_f2, {'a':1, 'b':2}, ['a'])

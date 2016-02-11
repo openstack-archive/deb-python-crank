@@ -6,10 +6,11 @@ MIT License
 """
 
 import collections, sys, string, inspect
+import warnings
 
 __all__ = [
         'get_argspec', 'get_params_with_argspec', 'remove_argspec_params_from_params',
-        'method_matches_args', 'Path', 'default_path_translator'
+        'method_matches_args', 'Path', 'default_path_translator', 'flatten_arguments'
     ]
 
 
@@ -80,10 +81,14 @@ def get_params_with_argspec(func, params, remainder):
             params[var] = remainder[i]
     return params
 
+
 def remove_argspec_params_from_params(func, params, remainder):
     """Remove parameters from the argument list that are
        not named parameters
        Returns: params, remainder"""
+
+    warnings.warn("remove_argspec_params_from_params is deprecated and will be removed",
+                  DeprecationWarning, stacklevel=2)
 
     # figure out which of the vars in the argspec are required
     argvars, var_args, argkws, argvals = get_argspec(func)
@@ -123,6 +128,58 @@ def remove_argspec_params_from_params(func, params, remainder):
             del params[var]
 
     return params, tuple(remainder)
+
+
+def flatten_arguments(func, params, remainder, keep_unexpected=False):
+    """Returns all the arguments for a function as positional parameters.
+
+    Keyword arguments are returned only if the function supports **kwargs
+    """
+    if remainder is None:
+        remainder = tuple()
+
+    # figure out which of the vars in the argspec are required
+    positional_args, varargs, argkws, default_arg_values = get_argspec(func)
+
+    if not params:
+        if varargs:
+            # If all arguments are already positional and we accept variable arguments
+            # we have nothing to do, params are already flattened and there are no
+            # extra arguments
+            return tuple(remainder), params
+        else:
+            # Otherwise arguments are already positional, but there are extra arguments
+            # so we just throw away the extra arguments
+            return tuple(remainder[:len(positional_args)]), params
+
+    args = []
+    kwargs = params.copy()
+
+    # Gather positional arguments
+    for idx, argname in enumerate(positional_args):
+        val = kwargs.pop(argname, _NotFound)
+        if val is not _NotFound:
+            args.append(val)
+        elif idx < len(remainder):
+            args.append(remainder[idx])
+        else:
+            # if argument is not available look for default value or just stop
+            # as we are actually missing an argument
+            try:
+                default_arg_idx = idx - (len(positional_args) - len(default_arg_values))
+                if default_arg_idx < 0:
+                    raise IndexError()
+                args.append(default_arg_values[default_arg_idx])
+            except IndexError:
+                raise TypeError('{} missing "{}" required argument'.format(func, argname))
+
+    if varargs:
+        args.extend(remainder[len(args):])
+
+    if not argkws:
+        kwargs = {}
+
+    return tuple(args), kwargs
 
 
 def method_matches_args(method, params, remainder, lax_params=False):
