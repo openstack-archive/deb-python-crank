@@ -171,7 +171,7 @@ def flatten_arguments(func, params, remainder, keep_unexpected=False):
                     raise IndexError()
                 args.append(default_arg_values[default_arg_idx])
             except IndexError:
-                raise TypeError('{} missing "{}" required argument'.format(func, argname))
+                raise TypeError('{0} missing "{1}" required argument'.format(func, argname))
 
     if varargs:
         args.extend(remainder[len(args):])
