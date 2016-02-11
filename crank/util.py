@@ -67,6 +67,7 @@ def get_argspec(func):
 
     return argspec
 
+
 def get_params_with_argspec(func, params, remainder):
     argvars, var_args, argkws, argvals = get_argspec(func)
 
@@ -99,7 +100,7 @@ def remove_argspec_params_from_params(func, params, remainder):
         optional_vars = argvars[-len(argvals):]
 
     # make a copy of the params so that we don't modify the existing one
-    params=params.copy()
+    params = params.copy()
 
     # replace the existing required variables with the values that come in
     # from params. these could be the parameters that come off of validation.
@@ -156,7 +157,7 @@ def method_matches_args(method, params, remainder, lax_params=False):
             # can evaluate properly
             del params[var]
         else:
-            break;
+            break
 
     #remove params that have a default value
     vars_with_default = argvars[len(argvars)-len(argvals):]
