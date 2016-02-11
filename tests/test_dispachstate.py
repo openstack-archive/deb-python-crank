@@ -16,6 +16,8 @@ class TestDispatchState:
 
     def test_create(self):
         assert self.state.params == {'a':1, 'b':2}, self.state.params
+        assert self.state.root_dispatcher == self.dispatcher
+        assert self.state.routing_args == {}
 
     def test_create_params_in_request(self):
         state = DispatchState(self.request, self.dispatcher)
