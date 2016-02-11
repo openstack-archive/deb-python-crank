@@ -206,19 +206,19 @@ class DispatchState(object):
         """
         return self._routing_args
 
-    def add_method(self, method, remainder):
+    def add_method(self, method, remainder):  # pragma: no cover
         warnings.warn("add_method is deprecated, please use set_action instead",
                       DeprecationWarning, stacklevel=2)
         self.set_action(method, remainder)
 
     @property
-    def method(self):
+    def method(self):  # pragma: no cover
         warnings.warn(".method is deprecated, please use .action instead",
                       DeprecationWarning, stacklevel=2)
         return self.action
 
     @property
-    def dispatcher(self):
+    def dispatcher(self):  # pragma: no cover
         warnings.warn(".dispatcher is deprecated, please use .root_dispatcher instead",
                       DeprecationWarning, stacklevel=2)
         return self.root_dispatcher

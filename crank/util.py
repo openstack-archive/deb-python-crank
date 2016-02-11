@@ -23,34 +23,34 @@ class _NotFound(object):
 def _getargspec(func):
     if not hasattr(inspect, 'signature'):
         return inspect.getargspec(func)
-
-    sig = inspect.signature(func)
-    args = [
-        p.name for p in sig.parameters.values()
-        if p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
-    ]
-    varargs = [
-        p.name for p in sig.parameters.values()
-        if p.kind == inspect.Parameter.VAR_POSITIONAL
-    ]
-    varargs = varargs[0] if varargs else None
-    varkw = [
-        p.name for p in sig.parameters.values()
-        if p.kind == inspect.Parameter.VAR_KEYWORD
-    ]
-    varkw = varkw[0] if varkw else None
-    defaults = tuple((
-        p.default for p in sig.parameters.values()
-        if p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and p.default is not p.empty
-    )) or None
-    return args, varargs, varkw, defaults
+    else:  #pragma: no cover
+        sig = inspect.signature(func)
+        args = [
+            p.name for p in sig.parameters.values()
+            if p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
+        ]
+        varargs = [
+            p.name for p in sig.parameters.values()
+            if p.kind == inspect.Parameter.VAR_POSITIONAL
+        ]
+        varargs = varargs[0] if varargs else None
+        varkw = [
+            p.name for p in sig.parameters.values()
+            if p.kind == inspect.Parameter.VAR_KEYWORD
+        ]
+        varkw = varkw[0] if varkw else None
+        defaults = tuple((
+            p.default for p in sig.parameters.values()
+            if p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and p.default is not p.empty
+        )) or None
+        return args, varargs, varkw, defaults
 
 
 _cached_argspecs = {}
 def get_argspec(func):
     if _PY2:
         im_func = getattr(func, 'im_func', func)
-    else:
+    else:  #pragma: no cover
         im_func = getattr(func, '__func__', func)
 
     try:
@@ -230,7 +230,7 @@ class Path(collections.deque):
     def __str__(self):
         return str(self.separator).join(self)
 
-    def __unicode__(self): # pragma: no cover
+    def __unicode__(self):  # pragma: no cover
         #unused on PY3
         return unicode(self.separator).join(self)
 
