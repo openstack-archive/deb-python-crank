@@ -1,3 +1,9 @@
+python-crank (0.7.2-3) UNRELEASED; urgency=medium
+
+  * Fixed VCS URLs (https).
+
+ -- Ondřej Nový <novy@ondrej.org>  Sun, 28 Feb 2016 15:34:44 +0100
+
 python-crank (0.7.2-2) unstable; urgency=medium
 
   * Fixed FTBFS by adding python-webob as build-depends (Closes: #802128).
