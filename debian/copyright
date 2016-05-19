@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: crank
-Source: git://github.com/TurboGears/crank.git
+Source: https://github.com/TurboGears/crank
 
 Files: debian/*
 Copyright: (c) 2014, Thomas Goirand <zigo@debian.org>
