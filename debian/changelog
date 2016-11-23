@@ -1,3 +1,9 @@
+python-crank (0.7.2-4) UNRELEASED; urgency=medium
+
+  * Bumped debhelper compat version to 10
+
+ -- Ondřej Nový <onovy@debian.org>  Thu, 24 Nov 2016 00:04:47 +0100
+
 python-crank (0.7.2-3) unstable; urgency=medium
 
   * Fixed VCS URLs (https).
