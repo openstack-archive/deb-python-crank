@@ -28,7 +28,7 @@ ChangeLog
 ~~~~~
 
 - New DispatchState api ( See http://turbogears.readthedocs.io/en/tg2.3.8/reference/classes.html#crank.dispatchstate.DispatchState )
-- Support for flattening function argumnets through ``crank.utils.flatten_arguments``
+- Support for flattening function arguments through ``crank.utils.flatten_arguments``
 - ``crank.utils.remove_argspec_params_from_params`` deprecated
 
 0.7.3
