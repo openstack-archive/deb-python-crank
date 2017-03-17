@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.8.0'
+version = '0.8.1'
 
 setup(name='crank',
       version=version,

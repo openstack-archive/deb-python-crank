@@ -25,6 +25,18 @@ All licenses allow for non-commercial and commercial use.
 ChangeLog
 --------------
 
+0.8.1
+~~~~~
+
+- Improved support for decorated functions that provide ``__wrapped__``.
+
+0.8.0
+~~~~~
+
+- New DispatchState api ( See http://turbogears.readthedocs.io/en/tg2.3.8/reference/classes.html#crank.dispatchstate.DispatchState )
+- Support for flattening function argumnets through ``crank.utils.flatten_arguments``
+- ``crank.utils.remove_argspec_params_from_params`` deprecated
+
 0.7.3
 ~~~~~~~~~~~~~
 
