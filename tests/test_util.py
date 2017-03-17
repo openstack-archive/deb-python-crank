@@ -1,6 +1,7 @@
 # encoding: utf-8
 from crank.util import *
 from crank.util import _PY2
+import functools
 
 if _PY2:
     def u(s): return s.decode('utf-8')
@@ -13,6 +14,17 @@ def mock_f(self, a, b, c=None, d=50, *args, **kw):
 def mock_f2(self, a, b):
     pass
 
+def decorator(f):
+    @functools.wraps(f)
+    def f_(*args, **kwargs):
+        return f(*args, **kwargs)
+    if not hasattr(f_, '__wrapped__'):
+        # Not all python versions update it
+        f_.__wrapped__ = f
+    return f_
+
+deco_mock_f = decorator(mock_f)
+
 class mock_c(object):
     def mock_f(self, a, b):
         pass
@@ -20,10 +32,14 @@ class mock_c(object):
 def test_get_argspec_first_call():
     argspec = get_argspec(mock_f)
     assert argspec == (['a', 'b', 'c', 'd'], 'args', 'kw', (None, 50)), argspec
+    deco_argspec = get_argspec(deco_mock_f)
+    assert argspec == deco_argspec, deco_argspec
 
 def test_get_argspec_cached():
     argspec = get_argspec(mock_f)
     assert argspec == (['a', 'b', 'c', 'd'], 'args', 'kw', (None, 50)), argspec
+    deco_argspec = get_argspec(deco_mock_f)
+    assert argspec == deco_argspec, deco_argspec
 
 def test_get_params_with_argspec():
     params = get_params_with_argspec(mock_f, {'a':1, 'c':2}, [3])

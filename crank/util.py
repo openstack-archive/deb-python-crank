@@ -54,6 +54,10 @@ def get_argspec(func):
     else:  #pragma: no cover
         im_func = getattr(func, '__func__', func)
 
+    if hasattr(im_func, '__wrapped__'):
+        # Cope with decorated functions if they properly updated __wrapped__
+        im_func = im_func.__wrapped__
+
     try:
         argspec = _cached_argspecs[im_func]
     except KeyError:
